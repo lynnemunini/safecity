@@ -20,6 +20,7 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.shouldShowRationale
 import com.grayseal.safecity.ui.theme.Orange
+import com.grayseal.safecity.ui.theme.poppinsFamily
 
 
 @ExperimentalPermissionsApi
@@ -46,11 +47,8 @@ fun Content(showButton: Boolean = true, onClick: () -> Unit) {
         if (enableLocation.value) {
             CustomDialog(
                 title = "Turn On Location Service",
-                desc = "We understand that privacy is important and we only request access to " +
-                        "your location for the purpose of providing you with accurate and relevant " +
-                        "weather information.\n\n" +
-                        "Unfortunately, without this permission you will not be able to utilize " +
-                        "the app's functionalities.",
+                desc = "To accurately report crimes and connect you with the appropriate " +
+                        "emergency services, Safe City needs access to your location.",
                 enableLocation,
                 onClick
             )
@@ -63,7 +61,7 @@ fun Content(showButton: Boolean = true, onClick: () -> Unit) {
 fun PermissionDeniedContent(
     rationaleMessage: String,
     shouldShowRationale: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
 ) {
 
     if (shouldShowRationale) {
@@ -73,8 +71,9 @@ fun PermissionDeniedContent(
                 Text(
                     text = "Location Permission Request",
                     textAlign = TextAlign.Center,
-                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
-                    color = Color.Black,
+                    fontFamily = poppinsFamily,
+                    fontSize = 18.sp,
+                    color = Color.DarkGray,
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -84,8 +83,8 @@ fun PermissionDeniedContent(
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .fillMaxWidth(),
-                    letterSpacing = 0.5.sp,
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                    fontFamily = poppinsFamily,
+                    fontSize = 13.sp,
                     color = Color.Black, textAlign = TextAlign.Justify
                 )
             },
@@ -100,7 +99,8 @@ fun PermissionDeniedContent(
                         ),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 ) {
-                    Text("Give Permission", color = Color.White)
+                    Text("Give Permission", color = Color.White, fontFamily = poppinsFamily,
+                        fontSize = 13.sp,)
                 }
             },
         )

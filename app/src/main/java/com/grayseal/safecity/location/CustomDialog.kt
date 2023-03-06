@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.grayseal.safecity.ui.theme.Orange
+import com.grayseal.safecity.ui.theme.poppinsFamily
 
 @Composable
 fun CustomDialog(
@@ -50,10 +51,10 @@ fun CustomDialog(
                     modifier = Modifier
                         //  .padding(top = 5.dp)
                         .fillMaxWidth(),
-                    letterSpacing = 2.sp,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.Black,
+                    fontFamily = poppinsFamily,
+                    fontSize = 20.sp,
+                    color = Color.DarkGray,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 // description
@@ -63,9 +64,9 @@ fun CustomDialog(
                     modifier = Modifier
                         .padding(top = 10.dp, start = 25.dp, end = 25.dp)
                         .fillMaxWidth(),
-                    letterSpacing = 1.sp,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Black,
+                    fontFamily = poppinsFamily,
+                    fontSize = 13.sp,
+                    color = Color.DarkGray,
                 )
                 // Spacer
                 Spacer(modifier = Modifier.height(24.dp))
@@ -97,6 +98,7 @@ fun CustomDialog(
                     ) {
                         Text(
                             text = "OK",
+                            fontFamily = poppinsFamily,
                             fontSize = 20.sp,
                             color = Color.White
                         )
@@ -109,8 +111,9 @@ fun CustomDialog(
                 }) {
                     Text(
                         "Cancel",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color.Black
+                        fontFamily = poppinsFamily,
+                        fontSize = 14.sp,
+                        color = Color.DarkGray
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
