@@ -25,11 +25,14 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.*
+import com.grayseal.safecity.components.MiniFabItem
 import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.ui.theme.Orange
 import com.grayseal.safecity.ui.theme.SafeCityTheme
+import com.grayseal.safecity.utils.toBitmapDrawable
+import com.grayseal.safecity.utils.toImageBitmap
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
@@ -72,6 +75,20 @@ fun GetCurrentLocation(
     var multiFloatingState by remember {
         mutableStateOf(MultiFloatingState.Collapsed)
     }
+    val items = listOf(
+        MiniFabItem(
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_report)
+                ?.toBitmapDrawable(context)!!.toImageBitmap(),
+            label = "Report",
+            identifier = "ReportFab"
+        ),
+        MiniFabItem(
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_call)
+                ?.toBitmapDrawable(context)!!.toImageBitmap(),
+            label = "Call Police",
+            identifier = "CallFab"
+        )
+    )
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
         deniedContent = { shouldShowRationale ->
@@ -116,7 +133,8 @@ fun GetCurrentLocation(
                         multiFloatingState = multiFloatingState,
                         onMultiFabStateChange = {
                             multiFloatingState = it
-                        }
+                        },
+                        items = items
                     )
                 }, content = { paddingValues ->
                     MapScreen(
