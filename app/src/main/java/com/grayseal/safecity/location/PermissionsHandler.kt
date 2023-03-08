@@ -99,8 +99,10 @@ fun PermissionDeniedContent(
                         ),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 ) {
-                    Text("Give Permission", color = Color.White, fontFamily = poppinsFamily,
-                        fontSize = 13.sp,)
+                    Text(
+                        "Give Permission", color = Color.White, fontFamily = poppinsFamily,
+                        fontSize = 13.sp,
+                    )
                 }
             },
         )

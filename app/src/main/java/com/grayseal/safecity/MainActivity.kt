@@ -23,10 +23,12 @@ import com.google.accompanist.permissions.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.StreetViewPanoramaOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.*
+import com.google.maps.android.compose.streetview.StreetView
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.ui.theme.Orange
 import com.grayseal.safecity.ui.theme.SafeCityTheme
@@ -123,10 +125,10 @@ fun MapScreen(latitude: Double, longitude: Double) {
     var uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 10f)
+        position = CameraPosition.fromLatLngZoom(location, 15f)
     }
     var properties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.HYBRID))
+        mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
     var showMarker by remember {
         mutableStateOf(false)
@@ -157,24 +159,6 @@ fun MapScreen(latitude: Double, longitude: Double) {
                 uiSettings = uiSettings.copy(zoomControlsEnabled = it)
             }
         )
-
-    }
-}
-
-@ExperimentalPermissionsApi
-@Composable
-fun HandleRequest(
-    permissionState: PermissionState,
-    deniedContent: @Composable (Boolean) -> Unit,
-    content: @Composable () -> Unit
-) {
-    when (permissionState.status) {
-        is PermissionStatus.Granted -> {
-            content()
-        }
-        is PermissionStatus.Denied -> {
-            deniedContent(permissionState.status.shouldShowRationale)
-        }
     }
 }
 
