@@ -10,10 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,12 +21,12 @@ import com.google.accompanist.permissions.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.maps.StreetViewPanoramaOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.maps.android.compose.*
-import com.google.maps.android.compose.streetview.StreetView
+import com.grayseal.safecity.components.MultiFloatingActionButton
+import com.grayseal.safecity.components.MultiFloatingState
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.ui.theme.Orange
 import com.grayseal.safecity.ui.theme.SafeCityTheme
@@ -51,6 +49,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalPermissionsApi
 @Composable
 fun GetCurrentLocation(
@@ -70,7 +69,9 @@ fun GetCurrentLocation(
     var showMap by remember {
         mutableStateOf(false)
     }
-
+    var multiFloatingState by remember {
+        mutableStateOf(MultiFloatingState.Collapsed)
+    }
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
         deniedContent = { shouldShowRationale ->
@@ -110,7 +111,20 @@ fun GetCurrentLocation(
                 }
             }
             if (showMap) {
-                MapScreen(latitude = latitude, longitude = longitude)
+                Scaffold(floatingActionButton = {
+                    MultiFloatingActionButton(
+                        multiFloatingState = multiFloatingState,
+                        onMultiFabStateChange = {
+                            multiFloatingState = it
+                        }
+                    )
+                }, content = { paddingValues ->
+                    MapScreen(
+                        modifier = Modifier.padding(paddingValues),
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                })
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     LinearProgressIndicator(color = Orange)
@@ -121,7 +135,7 @@ fun GetCurrentLocation(
 }
 
 @Composable
-fun MapScreen(latitude: Double, longitude: Double) {
+fun MapScreen(modifier: Modifier, latitude: Double, longitude: Double) {
     var uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
@@ -166,6 +180,5 @@ fun MapScreen(latitude: Double, longitude: Double) {
 @Composable
 fun DefaultPreview() {
     SafeCityTheme {
-
     }
 }
