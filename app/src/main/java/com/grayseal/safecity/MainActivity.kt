@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,8 +26,15 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.maps.android.compose.*
+import com.grayseal.safecity.BuildConfig.MAPS_API_KEY
 import com.grayseal.safecity.components.MiniFabItem
 import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
@@ -37,9 +45,13 @@ import com.grayseal.safecity.utils.toBitmapDrawable
 import com.grayseal.safecity.utils.toImageBitmap
 
 class MainActivity : ComponentActivity() {
+    private lateinit var placesClient: PlacesClient
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Places.initialize(this, MAPS_API_KEY)
+        placesClient = Places.createClient(this)
         setContent {
             SafeCityTheme {
                 // A surface container using the 'background' color from the theme
@@ -47,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    GetCurrentLocation(context = this)
+                    GetCurrentLocation(context = this, placesClient)
                 }
             }
         }
@@ -59,6 +71,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GetCurrentLocation(
     context: Context,
+    placesClient: PlacesClient
 ) {
     val permissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
     // To create an instance of the fused Location Provider Client
@@ -141,6 +154,7 @@ fun GetCurrentLocation(
                 }, content = { paddingValues ->
                     MapScreen(
                         modifier = Modifier.padding(paddingValues),
+                        placesClient = placesClient,
                         latitude = latitude,
                         longitude = longitude
                     )
@@ -162,7 +176,12 @@ fun GetCurrentLocation(
 }
 
 @Composable
-fun MapScreen(modifier: Modifier, latitude: Double, longitude: Double) {
+fun MapScreen(
+    modifier: Modifier,
+    placesClient: PlacesClient,
+    latitude: Double,
+    longitude: Double
+) {
     var uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
@@ -171,10 +190,10 @@ fun MapScreen(modifier: Modifier, latitude: Double, longitude: Double) {
     var properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
+    var markers by remember { mutableStateOf(emptyList<MarkerOptions>()) }
     var showMarker by remember {
         mutableStateOf(false)
     }
-
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.matchParentSize(),
@@ -182,8 +201,8 @@ fun MapScreen(modifier: Modifier, latitude: Double, longitude: Double) {
             uiSettings = uiSettings,
             cameraPositionState = cameraPositionState,
             onMapLoaded = {
-                // show Marker
-                showMarker = true
+                // Search for police stations and add markers to the map
+                searchForPoliceStations(placesClient, latitude, longitude)
             }
         ) {
             if (showMarker) {
@@ -201,6 +220,27 @@ fun MapScreen(modifier: Modifier, latitude: Double, longitude: Double) {
             }
         )
     }
+}
+
+fun searchForPoliceStations(placesClient: PlacesClient, latitude: Double, longitude: Double) {
+    val placesRequest = FindAutocompletePredictionsRequest.builder()
+        .setLocationRestriction(
+            RectangularBounds.newInstance(
+                LatLng(latitude - 0.1, longitude - 0.1),
+                LatLng(latitude + 0.1, longitude + 0.1)
+            )
+        )
+        .setTypeFilter(TypeFilter.ESTABLISHMENT)
+        .setQuery("police station")
+        .build()
+    placesClient.findAutocompletePredictions(placesRequest)
+        .addOnSuccessListener { response ->
+            // Handle response
+            Log.d("POLICE STATION", "${response.autocompletePredictions.get(0)}")
+        }
+        .addOnFailureListener { exception ->
+            // Handle Exception
+        }
 }
 
 @Preview(showBackground = true)
