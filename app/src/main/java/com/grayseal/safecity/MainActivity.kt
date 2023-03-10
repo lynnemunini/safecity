@@ -3,6 +3,9 @@ package com.grayseal.safecity
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -24,14 +27,17 @@ import com.google.accompanist.permissions.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.maps.android.compose.*
 import com.grayseal.safecity.BuildConfig.MAPS_API_KEY
@@ -156,7 +162,8 @@ fun GetCurrentLocation(
                         modifier = Modifier.padding(paddingValues),
                         placesClient = placesClient,
                         latitude = latitude,
-                        longitude = longitude
+                        longitude = longitude,
+                        context = context
                     )
                     if (multiFloatingState == MultiFloatingState.Expanded) {
                         Box(
@@ -180,12 +187,13 @@ fun MapScreen(
     modifier: Modifier,
     placesClient: PlacesClient,
     latitude: Double,
-    longitude: Double
+    longitude: Double,
+    context: Context
 ) {
     var uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 15f)
+        position = CameraPosition.fromLatLngZoom(location, 12f)
     }
     var properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
@@ -194,6 +202,7 @@ fun MapScreen(
     var showMarker by remember {
         mutableStateOf(false)
     }
+
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.matchParentSize(),
@@ -203,13 +212,38 @@ fun MapScreen(
             onMapLoaded = {
                 // Search for police stations and add markers to the map
                 searchForPoliceStations(placesClient, latitude, longitude)
+                    .addOnSuccessListener { response ->
+                        val markerOptionsList = response.autocompletePredictions.map{ prediction ->
+                            val placeId = prediction.placeId
+                            val placeFields = listOf(Place.Field.LAT_LNG)
+                            val request = FetchPlaceRequest.builder(placeId, placeFields).build()
+                            placesClient.fetchPlace(request)
+                                .addOnSuccessListener { response ->
+                                    val place = response.place
+                                    val latLng = place.latLng
+                                    val markerOptions = MarkerOptions()
+                                        .position(LatLng(latLng!!.latitude, latLng.longitude))
+                                        .title(prediction.getPrimaryText(null).toString())
+                                        .snippet(prediction.getSecondaryText(null).toString())
+                                    markers += markerOptions
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("RETRIEVING PLACES FAILED", "Error fetching place details: ${exception.message}")
+                                }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("POLICE STATIONS FAILED", "Error searching for police stations: ${exception.message}")
+                    }
             }
         ) {
-            if (showMarker) {
+            markers.forEach { marker ->
                 Marker(
-                    state = MarkerState(position = location),
-                    title = "Location",
-                    snippet = "${cameraPositionState.position.target.latitude}, ${cameraPositionState.position.target.longitude}"
+                    state = MarkerState(
+                        position = marker.position,
+                    ),
+                    title = marker.title,
+                    snippet = marker.snippet
                 )
             }
         }
@@ -222,7 +256,7 @@ fun MapScreen(
     }
 }
 
-fun searchForPoliceStations(placesClient: PlacesClient, latitude: Double, longitude: Double) {
+fun searchForPoliceStations(placesClient: PlacesClient, latitude: Double, longitude: Double): Task<FindAutocompletePredictionsResponse> {
     val placesRequest = FindAutocompletePredictionsRequest.builder()
         .setLocationRestriction(
             RectangularBounds.newInstance(
@@ -233,14 +267,8 @@ fun searchForPoliceStations(placesClient: PlacesClient, latitude: Double, longit
         .setTypeFilter(TypeFilter.ESTABLISHMENT)
         .setQuery("police station")
         .build()
-    placesClient.findAutocompletePredictions(placesRequest)
-        .addOnSuccessListener { response ->
-            // Handle response
-            Log.d("POLICE STATION", "${response.autocompletePredictions.get(0)}")
-        }
-        .addOnFailureListener { exception ->
-            // Handle Exception
-        }
+
+    return placesClient.findAutocompletePredictions(placesRequest)
 }
 
 @Preview(showBackground = true)
