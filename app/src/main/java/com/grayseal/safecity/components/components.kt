@@ -98,7 +98,7 @@ fun MiniFab(
         if (showLabel) {
             Text(
                 text = item.label,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontFamily = poppinsFamily,
                 color = Color.White,
                 fontWeight = FontWeight.Medium,
@@ -118,7 +118,7 @@ fun MiniFab(
                 ), onDraw = {
                 drawCircle(
                     color = Orange,
-                    radius = 83f
+                    radius = 60f
 
                 )
                 drawImage(
