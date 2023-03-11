@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
@@ -223,7 +224,7 @@ fun MapScreen(
     longitude: Double,
     context: Context
 ) {
-    val uiSettings by remember { mutableStateOf(MapUiSettings()) }
+    val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(location, 17f)
@@ -280,6 +281,22 @@ fun MapScreen(
                     ),
                     title = marker.title,
                     snippet = marker.snippet
+                )
+            }
+        }
+        Surface(modifier = Modifier.padding(20.dp), elevation = 10.dp, shape = CircleShape, color = Color.White) {
+            androidx.compose.material3.IconButton(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(Color.White, CircleShape)
+                    .align(Alignment.TopStart)
+                    .padding(12.dp),
+                onClick = {}
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_menu),
+                    contentDescription = "Menu",
+                    tint = Color.DarkGray
                 )
             }
         }
