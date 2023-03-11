@@ -5,19 +5,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.telecom.Call
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.FabPosition
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -52,12 +50,16 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.maps.android.compose.*
 import com.grayseal.safecity.BuildConfig.MAPS_API_KEY
+import com.grayseal.safecity.components.MiniFabItem
+import com.grayseal.safecity.components.MultiFloatingActionButton
+import com.grayseal.safecity.components.MultiFloatingState
 import com.grayseal.safecity.data.PoliceStation
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.ui.theme.Orange
 import com.grayseal.safecity.ui.theme.SafeCityTheme
 import com.grayseal.safecity.ui.theme.poppinsFamily
-import kotlinx.coroutines.launch
+import com.grayseal.safecity.utils.toBitmapDrawable
+import com.grayseal.safecity.utils.toImageBitmap
 
 class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
@@ -102,11 +104,26 @@ fun GetCurrentLocation(
     var showMap by remember {
         mutableStateOf(false)
     }
-    val scope = rememberCoroutineScope()
-    var isFabVisible by remember { mutableStateOf(true) }
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
     val sheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
+    )
+    var multiFloatingState by remember {
+        mutableStateOf(MultiFloatingState.Collapsed)
+    }
+    val items = listOf(
+        MiniFabItem(
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_report)
+                ?.toBitmapDrawable(context)!!.toImageBitmap(),
+            label = "Report",
+            identifier = "ReportFab"
+        ),
+        MiniFabItem(
+            icon = ContextCompat.getDrawable(context, R.drawable.ic_call)
+                ?.toBitmapDrawable(context)!!.toImageBitmap(),
+            label = "Call Police",
+            identifier = "CallFab"
+        )
     )
 
     com.grayseal.safecity.location.HandleRequest(
@@ -155,28 +172,16 @@ fun GetCurrentLocation(
                     sheetPeekHeight = 0.dp,
                     sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
                     floatingActionButton = {
-                        if (isFabVisible) {
-                            FloatingActionButton(
-                                modifier = Modifier.padding(bottom = 120.dp),
-                                onClick = {
-                                    isFabVisible = false
-                                    scope.launch {
-                                        if (sheetState.isCollapsed) {
-                                            sheetState.expand()
-                                        }
-                                    }
-                                },
-                                shape = CircleShape,
-                                containerColor = Orange,
-                                interactionSource = MutableInteractionSource()
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_add),
-                                    contentDescription = "Add",
-                                )
-                            }
-                        }
+                        MultiFloatingActionButton(
+                            multiFloatingState = multiFloatingState,
+                            sheetState = sheetState,
+                            onMultiFabStateChange = {
+                                multiFloatingState = it
+                            },
+                            items = items
+                        )
                     },
+                    floatingActionButtonPosition = FabPosition.End,
                     sheetContent = {
                         BottomSheetContent(
                             placesClient = placesClient,
@@ -194,7 +199,7 @@ fun GetCurrentLocation(
                                 context = context
                             )
                             // transparent overlay on top of content, shown if sheet is expanded
-                            if (sheetState.isExpanded) {
+                            if (sheetState.isExpanded || multiFloatingState == MultiFloatingState.Expanded) {
                                 Box(
                                     modifier = Modifier
                                         .background(Color.Black.copy(alpha = 0.5f))
@@ -210,11 +215,6 @@ fun GetCurrentLocation(
             }
         }
     )
-    LaunchedEffect(sheetState.isCollapsed) {
-        if (sheetState.isCollapsed) {
-            isFabVisible = true
-        }
-    }
 }
 
 @Composable
