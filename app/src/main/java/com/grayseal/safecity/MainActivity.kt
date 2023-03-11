@@ -5,19 +5,16 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.telecom.Call
 import android.util.Log
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -26,15 +23,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,7 +81,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @ExperimentalPermissionsApi
 @Composable
 fun GetCurrentLocation(
@@ -158,15 +154,6 @@ fun GetCurrentLocation(
                     sheetBackgroundColor = Color.White,
                     sheetPeekHeight = 0.dp,
                     sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
-                    // To dismiss bottomSheet when clicking outside on the screen
-                    modifier = Modifier
-                        .pointerInput(Unit) {
-                            detectTapGestures(onPress = {
-                                if (sheetState.isExpanded) {
-                                    sheetState.collapse()
-                                }
-                            })
-                        },
                     floatingActionButton = {
                         if (isFabVisible) {
                             FloatingActionButton(
@@ -191,22 +178,29 @@ fun GetCurrentLocation(
                         }
                     },
                     sheetContent = {
-                                   BottomSheetContent(placesClient = placesClient, latitude = latitude, longitude = longitude)
-                    },
-                    content = { paddingValues ->
-                        MapScreen(
-                            modifier = Modifier.padding(paddingValues),
+                        BottomSheetContent(
                             placesClient = placesClient,
                             latitude = latitude,
-                            longitude = longitude,
-                            context = context
+                            longitude = longitude
                         )
-                        if (sheetState.isExpanded) {
-                            Box(
-                                modifier = Modifier
-                                    .background(Color.Black.copy(alpha = 0.65f))
-                                    .fillMaxSize()
-                            ) {}
+                    },
+                    content = { paddingValues ->
+                        Box {
+                            MapScreen(
+                                modifier = Modifier.padding(paddingValues),
+                                placesClient = placesClient,
+                                latitude = latitude,
+                                longitude = longitude,
+                                context = context
+                            )
+                            // transparent overlay on top of content, shown if sheet is expanded
+                            if (sheetState.isExpanded) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color.Black.copy(alpha = 0.5f))
+                                        .fillMaxSize()
+                                ) {}
+                            }
                         }
                     })
             } else {
@@ -234,7 +228,7 @@ fun MapScreen(
     var uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 12f)
+        position = CameraPosition.fromLatLngZoom(location, 16f)
     }
     var properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
@@ -295,7 +289,7 @@ fun MapScreen(
 }
 
 @Composable
-fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: Double){
+fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: Double) {
     var policeStations by remember { mutableStateOf(emptyList<PoliceStation>()) }
     // Search for police stations and add markers to the map
     searchForPoliceStations(placesClient, latitude, longitude)
@@ -331,12 +325,12 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
         }
 
     Column(
-        modifier = Modifier.height(420.dp),
+        modifier = Modifier.height(370.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp),
+                .padding(top = 20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Top
         ) {
@@ -354,39 +348,70 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .padding(horizontal = 20.dp)
-                .padding(top = 10.dp, bottom = 10.dp)
+                .padding(top = 10.dp)
+        )
+        androidx.compose.material3.Text(
+            text = "Are you looking to report a crime? Here's a list of police stations located near you.",
+            fontFamily = poppinsFamily,
+            fontSize = 12.sp,
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(top = 4.dp, bottom = 15.dp)
+        )
+        Divider(
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
         )
         LazyColumn(
             modifier = Modifier
-                .padding(top = 5.dp, bottom = 5.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+                .padding(bottom = 5.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items (items = policeStations) {policeStation ->
+            items(items = policeStations) { policeStation ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = {
-                        })
                 ) {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         androidx.compose.material3.Text(
                             policeStation.markerOptions.title.toString(),
                             fontFamily = poppinsFamily,
-                            fontSize = 13.sp,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            overflow = TextOverflow.Clip,
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(horizontal = 20.dp)
                         )
                         androidx.compose.material3.Text(
                             policeStation.markerOptions.snippet.toString(),
                             fontFamily = poppinsFamily,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             modifier = Modifier.padding(horizontal = 20.dp)
                         )
                     }
                 }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    androidx.compose.material3.Text(
+                        "Report here",
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp,
+                        color = Orange
+                    )
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_report),
+                        contentDescription = "Report Here",
+                        tint = Orange
+                    )
+                }
                 Divider(
-                    modifier = Modifier.padding(vertical = 10.dp)
+                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
                 )
             }
         }
