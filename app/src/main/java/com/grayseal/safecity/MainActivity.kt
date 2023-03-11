@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.FabPosition
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -181,7 +180,6 @@ fun GetCurrentLocation(
                             items = items
                         )
                     },
-                    floatingActionButtonPosition = FabPosition.End,
                     sheetContent = {
                         BottomSheetContent(
                             placesClient = placesClient,
@@ -225,12 +223,12 @@ fun MapScreen(
     longitude: Double,
     context: Context
 ) {
-    var uiSettings by remember { mutableStateOf(MapUiSettings()) }
+    val uiSettings by remember { mutableStateOf(MapUiSettings()) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 16f)
+        position = CameraPosition.fromLatLngZoom(location, 17f)
     }
-    var properties by remember {
+    val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
     var markers by remember { mutableStateOf(emptyList<MarkerOptions>()) }
@@ -306,7 +304,11 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
                             .position(LatLng(latLng!!.latitude, latLng.longitude))
                             .title(prediction.getPrimaryText(null).toString())
                             .snippet(prediction.getSecondaryText(null).toString())
-                        val station = PoliceStation(markerOptions, prediction, place)
+                        val distance = calculateDistance(
+                            LatLng(latitude, longitude),
+                            LatLng(place.latLng!!.latitude, place.latLng!!.longitude)
+                        )
+                        val station = PoliceStation(markerOptions, prediction, place, distance)
                         policeStations += station
                     }
                     .addOnFailureListener { exception ->
@@ -330,7 +332,7 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 20.dp),
+                .padding(top = 15.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Top
         ) {
@@ -371,21 +373,20 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         androidx.compose.material3.Text(
                             policeStation.markerOptions.title.toString(),
-                            fontFamily = poppinsFamily,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             overflow = TextOverflow.Clip,
+                            fontFamily = poppinsFamily,
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(horizontal = 20.dp)
                         )
                         androidx.compose.material3.Text(
                             policeStation.markerOptions.snippet.toString(),
                             fontFamily = poppinsFamily,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             modifier = Modifier.padding(horizontal = 20.dp)
                         )
@@ -394,21 +395,34 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = 20.dp),
+                        .padding(horizontal = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
                 ) {
-                    androidx.compose.material3.Text(
-                        "Report here",
-                        fontFamily = poppinsFamily,
-                        fontSize = 13.sp,
-                        color = Orange
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_report),
-                        contentDescription = "Report Here",
-                        tint = Orange
-                    )
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                        androidx.compose.material3.Text(
+                            (policeStation.distance / 1000.0).toInt().toString() + " km away",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                        Row {
+                            androidx.compose.material3.Text(
+                                "Report here",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Orange
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_report),
+                                contentDescription = "Report Here",
+                                tint = Orange
+                            )
+                        }
+                    }
                 }
                 Divider(
                     modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
@@ -435,6 +449,15 @@ fun searchForPoliceStations(
         .build()
 
     return placesClient.findAutocompletePredictions(placesRequest)
+}
+
+fun calculateDistance(currentLocation: LatLng, policeStationLocation: LatLng): Double {
+    val results = FloatArray(1)
+    Location.distanceBetween(
+        currentLocation.latitude, currentLocation.longitude,
+        policeStationLocation.latitude, policeStationLocation.longitude, results
+    )
+    return results[0].toDouble()
 }
 
 @Preview(showBackground = true)

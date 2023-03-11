@@ -7,5 +7,6 @@ import com.google.android.libraries.places.api.model.Place
 data class PoliceStation(
     val markerOptions: MarkerOptions,
     val prediction: AutocompletePrediction,
-    val place: Place
+    val place: Place,
+    val distance: Double
 )

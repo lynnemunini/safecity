@@ -1,5 +1,9 @@
 package com.grayseal.safecity.components
 
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
@@ -12,6 +16,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,10 +26,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import com.grayseal.safecity.R
 import com.grayseal.safecity.ui.theme.Orange
 import com.grayseal.safecity.ui.theme.poppinsFamily
@@ -47,16 +55,17 @@ fun MultiFloatingActionButton(
     multiFloatingState: MultiFloatingState,
     sheetState: BottomSheetState,
     onMultiFabStateChange: (MultiFloatingState) -> Unit,
-    items: List<MiniFabItem>
+    items: List<MiniFabItem>,
 ) {
     val transition = updateTransition(targetState = multiFloatingState, label = "transition")
     val rotate by transition.animateFloat(label = "rotate") {
         if (it == MultiFloatingState.Expanded) 315f else 0f
     }
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isFabVisible by remember { mutableStateOf(true) }
     val modifier = if (transition.currentState == MultiFloatingState.Expanded) {
-        Modifier.padding(bottom = 240.dp)
+        Modifier.padding(bottom = 250.dp)
     } else {
         Modifier.padding(bottom = 120.dp)
     }
@@ -77,6 +86,23 @@ fun MultiFloatingActionButton(
                                     if (sheetState.isCollapsed) {
                                         sheetState.expand()
                                     }
+                                }
+                            }
+                            if (item.label == "Call Police") {
+                                if (ContextCompat.checkSelfPermission(
+                                        context,
+                                        android.Manifest.permission.CALL_PHONE
+                                    ) != PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    ActivityCompat.requestPermissions(
+                                        context as Activity,
+                                        arrayOf(android.Manifest.permission.CALL_PHONE),
+                                        101
+                                    )
+                                } else {
+                                    val intent =
+                                        Intent(Intent.ACTION_CALL, Uri.parse("tel:+254759060329"))
+                                    startActivity(context, intent, null)
                                 }
                             }
                         },
@@ -127,9 +153,8 @@ fun MiniFab(
             Text(
                 text = item.label,
                 fontSize = 16.sp,
-                fontFamily = poppinsFamily,
+                style = MaterialTheme.typography.labelMedium,
                 color = Color.White,
-                fontWeight = FontWeight.Medium,
                 // modifier = Modifier.background(color = Color.White, shape = RoundedCornerShape(3.dp)).padding(horizontal = 5.dp)
             )
         }
