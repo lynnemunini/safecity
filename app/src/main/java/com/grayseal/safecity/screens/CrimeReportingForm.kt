@@ -2,7 +2,17 @@ package com.grayseal.safecity.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.icu.util.Calendar
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -12,8 +22,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,7 +57,6 @@ fun CrimeReportForm() {
     var witnessName by remember { mutableStateOf("") }
     var witnessContact by remember { mutableStateOf("") }
     var witnessDescription by remember { mutableStateOf("") }
-    var evidence by remember { mutableStateOf("") }
     var otherInformation by remember { mutableStateOf("") }
 
     // Types
@@ -90,6 +102,50 @@ fun CrimeReportForm() {
         minute,
         android.text.format.DateFormat.is24HourFormat(context)
     )
+
+    var imageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    val bitmap = remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+
+    // Retrieve an image from the device gallery
+    val launcher = rememberLauncherForActivityResult(
+        contract =
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        // take a persistable URI permission to access the content of the URI outside of the scope of app's process
+        val contentResolver = context.contentResolver
+        if (uri != null) {
+            try {
+                contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: SecurityException) {
+                Toast.makeText(
+                    context,
+                    "Failed to take permission: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        imageUri = uri
+    }
+
+    imageUri?.let {
+        if (Build.VERSION.SDK_INT < 28) {
+            bitmap.value = MediaStore.Images
+                .Media.getBitmap(context.contentResolver, it)
+
+        } else {
+            val source = ImageDecoder
+                .createSource(context.contentResolver, it)
+            bitmap.value = ImageDecoder.decodeBitmap(source)
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -427,7 +483,10 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(15.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     "Please provide any evidence or additional information related to the " +
                             "crime. This could include photos, videos, or any other relevant documents.",
@@ -435,18 +494,38 @@ fun CrimeReportForm() {
                     fontFamily = poppinsFamily,
                     fontSize = 13.sp
                 )
-                OutlinedTextField(
-                    value = evidence,
-                    onValueChange = { evidence = it },
-                    placeholder = { Text("Evidence") },
+                // Show file name if file is selected
+                if (imageUri != null) {
+                    Text("Selected file: ${imageUri?.path}")
+                    bitmap.value?.asImageBitmap()?.let {
+                        Image(
+                            bitmap = it,
+                            contentDescription = imageUri?.path,
+                            modifier = Modifier.height(300.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
+                // Button to select file
+                TextButton(
+                    onClick = {
+                        launcher.launch(arrayOf("image/*"))
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
+                    interactionSource = MutableInteractionSource()
+                ) {
+                    Text(
+                        "Select File",
+                        fontFamily = poppinsFamily,
+                        fontSize = 18.sp,
+                        color = Green,
+                        fontWeight = FontWeight.Bold
                     )
-                )
+                }
             }
         }
+
         // Other information
         Row(
             modifier = Modifier
