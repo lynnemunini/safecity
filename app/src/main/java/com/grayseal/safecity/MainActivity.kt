@@ -245,7 +245,9 @@ fun GetCurrentLocation(
                                                         Icon(
                                                             painter = painterResource(id = it.icon),
                                                             contentDescription = it.name,
-                                                            tint = Green,
+                                                            tint = MaterialTheme.colorScheme.onBackground.copy(
+                                                                alpha = 0.4f
+                                                            ),
                                                             modifier = Modifier
                                                                 .size(38.dp)
                                                                 .padding(end = 10.dp)
