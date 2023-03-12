@@ -62,10 +62,6 @@ fun CrimeReportForm() {
     // Types
     val crimes = listOf("Theft", "Burglary", "Assault", "Vandalism", "Fraud")
     var crimeExpanded by remember { mutableStateOf(false) }
-    var showCalendar by remember { mutableStateOf(false) }
-    var showClock by remember {
-        mutableStateOf(false)
-    }
     val context = LocalContext.current
 
     // CALENDAR
@@ -78,7 +74,6 @@ fun CrimeReportForm() {
             cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
             val selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
             date = selectedDate // set the selected date to the mutableStateOf variable
-            showCalendar = false
         },
         cal.get(Calendar.YEAR),
         cal.get(Calendar.MONTH),
@@ -96,7 +91,6 @@ fun CrimeReportForm() {
             cal.set(Calendar.MINUTE, selectedMinute)
             val selectedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
             time = selectedTime // set the selected time to the mutableStateOf variable
-            showClock = false
         },
         hour,
         minute,
@@ -146,7 +140,6 @@ fun CrimeReportForm() {
         }
     }
 
-
     Column(
         modifier = Modifier
             .padding(20.dp)
@@ -191,7 +184,7 @@ fun CrimeReportForm() {
                     ),
                     trailingIcon = {
                         IconButton(onClick = {
-                            showClock = true
+                            timePickerDialog.show()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_time),
@@ -201,9 +194,6 @@ fun CrimeReportForm() {
                         }
                     },
                 )
-                if (showClock) {
-                    timePickerDialog.show()
-                }
                 OutlinedTextField(
                     value = date,
                     onValueChange = { date = it },
@@ -216,7 +206,7 @@ fun CrimeReportForm() {
                     ),
                     trailingIcon = {
                         IconButton(onClick = {
-                            showCalendar = true
+                            datePickerDialog.show()
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_calendar),
@@ -226,9 +216,6 @@ fun CrimeReportForm() {
                         }
                     },
                 )
-                if (showCalendar) {
-                    datePickerDialog.show()
-                }
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
@@ -506,14 +493,12 @@ fun CrimeReportForm() {
                         )
                     }
                 }
-
                 // Button to select file
                 TextButton(
                     onClick = {
                         launcher.launch(arrayOf("image/*"))
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    interactionSource = MutableInteractionSource()
                 ) {
                     Text(
                         "Select File",
@@ -557,7 +542,7 @@ fun CrimeReportForm() {
             }
         }
         // Submit button
-        androidx.compose.material3.Button(
+        Button(
             onClick = { submitReport() },
             modifier = Modifier
                 .fillMaxWidth()
