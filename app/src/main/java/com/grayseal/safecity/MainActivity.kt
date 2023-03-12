@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +63,7 @@ import com.grayseal.safecity.components.MiniFabItem
 import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
 import com.grayseal.safecity.data.PoliceStation
+import com.grayseal.safecity.data.navigationDrawerItems
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.SafeCityTheme
@@ -208,45 +208,76 @@ fun GetCurrentLocation(
                             scrimColor = Color.Black.copy(alpha = 0.5f),
                             drawerContent = {
                                 ModalDrawerSheet(
-                                    modifier = Modifier.width(300.dp),
+                                    modifier = Modifier.width(290.dp),
                                     drawerShape = RectangleShape,
                                     drawerContainerColor = MaterialTheme.colorScheme.background,
                                     drawerTonalElevation = 0.dp,
                                 ) {
                                     Spacer(Modifier.height(30.dp))
-                                    Row(
+                                    Divider(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(start = 20.dp, top = 20.dp),
-                                        horizontalArrangement = Arrangement.Start,
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .height(15.dp),
+                                        color = MaterialTheme.colorScheme.onBackground.copy(
+                                            alpha = 0.1f
+                                        )
+                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp, vertical = 20.dp),
+                                        horizontalAlignment = Alignment.Start
                                     ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp),
-                                            horizontalAlignment = Alignment.Start
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .padding(
-                                                        start = 20.dp,
-                                                        end = 20.dp,
-                                                        bottom = 20.dp
-                                                    ),
-                                                horizontalArrangement = Arrangement.End,
-                                                verticalAlignment = Alignment.Bottom
+                                        Row(modifier = Modifier.fillMaxWidth()) {
+                                            Column(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalArrangement = Arrangement.spacedBy(40.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally
                                             ) {
-                                                androidx.compose.material3.Text(
-                                                    text = "© 2023",
-                                                    fontSize = 12.sp,
-                                                    fontFamily = poppinsFamily,
-                                                    fontWeight = FontWeight.Normal,
-                                                    textAlign = TextAlign.End,
-                                                    modifier = Modifier.align(Alignment.Bottom)
-                                                )
+                                                navigationDrawerItems.forEach {
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(horizontal = 20.dp),
+                                                        horizontalArrangement = Arrangement.Start,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Icon(
+                                                            painter = painterResource(id = it.icon),
+                                                            contentDescription = it.name,
+                                                            tint = Green,
+                                                            modifier = Modifier
+                                                                .size(38.dp)
+                                                                .padding(end = 10.dp)
+                                                        )
+                                                        androidx.compose.material3.Text(
+                                                            text = it.name,
+                                                            fontSize = 15.sp,
+                                                            fontFamily = poppinsFamily,
+                                                            fontWeight = FontWeight.Medium,
+                                                            color = MaterialTheme.colorScheme.onBackground.copy(
+                                                                alpha = 0.8f
+                                                            ),
+                                                            modifier = Modifier.align(Alignment.CenterVertically)
+                                                        )
+                                                    }
+                                                }
                                             }
+                                        }
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            horizontalArrangement = Arrangement.End,
+                                            verticalAlignment = Alignment.Bottom
+                                        ) {
+                                            androidx.compose.material3.Text(
+                                                text = "© 2023",
+                                                fontSize = 12.sp,
+                                                fontFamily = poppinsFamily,
+                                                fontWeight = FontWeight.Normal,
+                                                textAlign = TextAlign.End,
+                                                modifier = Modifier.align(Alignment.Bottom)
+                                            )
                                         }
                                     }
                                 }
