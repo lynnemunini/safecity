@@ -14,10 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomSheetState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,11 +45,12 @@ class MiniFabItem(
     val identifier: String
 )
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MultiFloatingActionButton(
     multiFloatingState: MultiFloatingState,
     sheetState: BottomSheetState,
+    drawerState: DrawerState,
     onMultiFabStateChange: (MultiFloatingState) -> Unit,
     items: List<MiniFabItem>,
 ) {
@@ -134,10 +132,8 @@ fun MultiFloatingActionButton(
             }
         }
     }
-    LaunchedEffect(sheetState.isCollapsed) {
-        if (sheetState.isCollapsed) {
-            isFabVisible = true
-        }
+    LaunchedEffect(sheetState.isCollapsed, drawerState.isOpen) {
+        isFabVisible = sheetState.isCollapsed && !drawerState.isOpen
     }
 }
 

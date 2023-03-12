@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,6 +70,7 @@ import com.grayseal.safecity.ui.theme.SafeCityTheme
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.toBitmapDrawable
 import com.grayseal.safecity.utils.toImageBitmap
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var placesClient: PlacesClient
@@ -89,7 +94,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @ExperimentalPermissionsApi
 @Composable
 fun GetCurrentLocation(
@@ -111,9 +116,11 @@ fun GetCurrentLocation(
         mutableStateOf(false)
     }
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val sheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
     )
+    val scope = rememberCoroutineScope()
     var multiFloatingState by remember {
         mutableStateOf(MultiFloatingState.Collapsed)
     }
@@ -181,6 +188,7 @@ fun GetCurrentLocation(
                         MultiFloatingActionButton(
                             multiFloatingState = multiFloatingState,
                             sheetState = sheetState,
+                            drawerState = drawerState,
                             onMultiFabStateChange = {
                                 multiFloatingState = it
                             },
@@ -194,24 +202,77 @@ fun GetCurrentLocation(
                             longitude = longitude
                         )
                     },
-                    content = { paddingValues ->
-                        Box {
-                            MapScreen(
-                                modifier = Modifier.padding(paddingValues),
-                                placesClient = placesClient,
-                                latitude = latitude,
-                                longitude = longitude,
-                                context = context
-                            )
-                            // transparent overlay on top of content, shown if sheet is expanded
-                            if (sheetState.isExpanded || multiFloatingState == MultiFloatingState.Expanded) {
-                                Box(
-                                    modifier = Modifier
-                                        .background(Color.Black.copy(alpha = 0.5f))
-                                        .fillMaxSize()
-                                ) {}
-                            }
-                        }
+                    content = {
+                        ModalNavigationDrawer(
+                            drawerState = drawerState,
+                            scrimColor = Color.Black.copy(alpha = 0.5f),
+                            drawerContent = {
+                                ModalDrawerSheet(
+                                    modifier = Modifier.width(300.dp),
+                                    drawerShape = RectangleShape,
+                                    drawerContainerColor = MaterialTheme.colorScheme.background,
+                                    drawerTonalElevation = 0.dp,
+                                ) {
+                                    Spacer(Modifier.height(30.dp))
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 20.dp, top = 20.dp),
+                                        horizontalArrangement = Arrangement.Start,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp),
+                                            horizontalAlignment = Alignment.Start
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(
+                                                        start = 20.dp,
+                                                        end = 20.dp,
+                                                        bottom = 20.dp
+                                                    ),
+                                                horizontalArrangement = Arrangement.End,
+                                                verticalAlignment = Alignment.Bottom
+                                            ) {
+                                                androidx.compose.material3.Text(
+                                                    text = "© 2023",
+                                                    fontSize = 12.sp,
+                                                    fontFamily = poppinsFamily,
+                                                    fontWeight = FontWeight.Normal,
+                                                    textAlign = TextAlign.End,
+                                                    modifier = Modifier.align(Alignment.Bottom)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            content = {
+                                Box {
+                                    MapScreen(
+                                        placesClient = placesClient,
+                                        latitude = latitude,
+                                        longitude = longitude
+                                    ) {
+                                        scope.launch {
+                                            drawerState.open()
+                                        }
+                                    }
+                                    // transparent overlay on top of content, shown if sheet is expanded
+                                    if (sheetState.isExpanded || multiFloatingState == MultiFloatingState.Expanded) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(Color.Black.copy(alpha = 0.5f))
+                                                .fillMaxSize()
+                                        ) {}
+                                    }
+                                }
+                            },
+                        )
                     })
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -224,11 +285,10 @@ fun GetCurrentLocation(
 
 @Composable
 fun MapScreen(
-    modifier: Modifier,
     placesClient: PlacesClient,
     latitude: Double,
     longitude: Double,
-    context: Context
+    onMenuClick: () -> Unit,
 ) {
     val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val location = LatLng(latitude, longitude)
@@ -302,7 +362,7 @@ fun MapScreen(
                     .background(Color.White, CircleShape)
                     .align(Alignment.TopStart)
                     .padding(12.dp),
-                onClick = {}
+                onClick = onMenuClick
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_menu),
