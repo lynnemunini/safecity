@@ -1,20 +1,30 @@
 package com.grayseal.safecity.screens
 
+import android.app.DatePickerDialog
+import android.icu.util.Calendar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.grayseal.safecity.R
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,11 +45,41 @@ fun CrimeReportForm() {
     var evidence by remember { mutableStateOf("") }
     var otherInformation by remember { mutableStateOf("") }
 
+    // Types
+    val crimes = listOf("Theft", "Burglary", "Assault", "Vandalism", "Fraud")
+    var crimeExpanded by remember { mutableStateOf(false) }
+    var showCalendar by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // CALENDAR
+    val cal = Calendar.getInstance()
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            val selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
+            date = selectedDate // set the selected date to the mutableStateOf variable
+            showCalendar = false
+        },
+        cal.get(Calendar.YEAR),
+        cal.get(Calendar.MONTH),
+        cal.get(Calendar.DAY_OF_MONTH)
+    )
+
     Column(
         modifier = Modifier
             .padding(20.dp)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        Text(
+            "Report a crime",
+            fontFamily = poppinsFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 22.sp
+        )
         // Incident details
         Row(
             modifier = Modifier
@@ -47,34 +87,63 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide the details of the incident, " +
                             "including the date and time it occurred, as well as the " +
                             "specific location where it took place.",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = time,
                     onValueChange = { time = it },
-                    placeholder = { androidx.compose.material3.Text("Time") },
+                    placeholder = {
+                        Text(
+                            "Time of Crime",
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = date,
                     onValueChange = { date = it },
-                    placeholder = { androidx.compose.material3.Text("Date") },
+                    placeholder = { Text("Date of Crime") },
                     readOnly = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    ),
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            showCalendar = true
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_calendar),
+                                "Drop down menu",
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                        }
+                    },
                 )
-                androidx.compose.material3.OutlinedTextField(
+                if (showCalendar) {
+                    datePickerDialog.show()
+                }
+                OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
-                    placeholder = { androidx.compose.material3.Text("Location") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Location of Crime") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -86,20 +155,60 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide a brief description of the type of crime that " +
                             "occurred, such as theft, burglary, or assault",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
-                    value = crimeDescription,
-                    onValueChange = { crimeDescription = it },
-                    placeholder = { androidx.compose.material3.Text("Crime description") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = crimeDescription,
+                        onValueChange = { crimeDescription = it },
+                        placeholder = { Text("Crime description") },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                crimeExpanded = true
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_arrow),
+                                    "Drop down menu",
+                                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                )
+                            }
+                        },
+                        readOnly = true,
+                    )
+                    if (crimeExpanded) {
+                        DropdownMenu(
+                            expanded = true,
+                            onDismissRequest = { },
+                            modifier = Modifier.background(color = Color.White)
+                        ) {
+                            crimes.forEach { crime ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(text = crime)
+                                    },
+                                    onClick = {
+                                        crimeDescription = crime
+                                        crimeExpanded = false
+                                    },
+                                    modifier = Modifier.widthIn(max = 300.dp),
+                                    interactionSource = MutableInteractionSource()
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
         // Victim information
@@ -109,31 +218,44 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide the victim's name, ID number (if available), and " +
                             "contact information (such as phone number or email address).",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = victimID,
                     onValueChange = { victimID = it },
-                    placeholder = { androidx.compose.material3.Text("Victim ID no.") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Victim National ID no.") },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = victimName,
                     onValueChange = { victimName = it },
-                    placeholder = { androidx.compose.material3.Text("Victim name") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Victim name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = victimContact,
                     onValueChange = { victimContact = it },
-                    placeholder = { androidx.compose.material3.Text("Victim contact information") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Victim contact information") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -144,26 +266,34 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide any details you have about the suspect(s), including " +
                             "their physical description, name (if known), and any identifying " +
                             "features such as tattoos or scars.",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = suspectName,
                     onValueChange = { suspectName = it },
-                    placeholder = { androidx.compose.material3.Text("Suspect name") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Suspect name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = suspectDescription,
                     onValueChange = { suspectDescription = it },
-                    placeholder = { androidx.compose.material3.Text("Suspect description") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Suspect description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -175,32 +305,44 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide the name(s) and contact information (such as phone " +
                             "number or email address) of any witnesses to the crime. " +
                             "Additionally, you may provide a brief description of what the witness(es) saw.",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = witnessName,
                     onValueChange = { witnessName = it },
-                    placeholder = { androidx.compose.material3.Text("Witness name") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Witness name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = witnessContact,
                     onValueChange = { witnessContact = it },
-                    placeholder = { androidx.compose.material3.Text("Witness contact information") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Witness contact information") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
-                androidx.compose.material3.TextField(
+                OutlinedTextField(
                     value = witnessDescription,
                     onValueChange = { witnessDescription = it },
-                    placeholder = { androidx.compose.material3.Text("Brief description") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Brief description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -212,19 +354,23 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.Text(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
                     "Please provide any evidence or additional information related to the " +
                             "crime. This could include photos, videos, or any other relevant documents.",
                     modifier = Modifier.padding(bottom = 8.dp),
                     fontFamily = poppinsFamily,
-                    fontSize = 12.sp
+                    fontSize = 13.sp
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = evidence,
                     onValueChange = { evidence = it },
-                    placeholder = { androidx.compose.material3.Text("Evidence") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("Evidence") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -236,19 +382,22 @@ fun CrimeReportForm() {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start
         ) {
-            Column {
-                androidx.compose.material3.OutlinedTextField(
+            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Text(
+                    "If you have any other information related to the crime that you " +
+                            "think may be helpful, please provide it below.",
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    fontFamily = poppinsFamily,
+                    fontSize = 13.sp
+                )
+                OutlinedTextField(
                     value = otherInformation,
                     onValueChange = { otherInformation = it },
-                    placeholder = {
-                        androidx.compose.material3.Text(
-                            "If you have any other information related to the crime that you " +
-                                    "think may be helpful, please provide it below.",
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            fontFamily = poppinsFamily,
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Green,
+                        focusedBorderColor = Green
+                    )
                 )
             }
         }
@@ -257,11 +406,17 @@ fun CrimeReportForm() {
             onClick = { submitReport() },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
+                .padding(top = 16.dp, bottom = 10.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Green)
         ) {
-            androidx.compose.material3.Text("Submit")
+            Text(
+                "REPORT",
+                fontFamily = poppinsFamily,
+                color = Color.White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
