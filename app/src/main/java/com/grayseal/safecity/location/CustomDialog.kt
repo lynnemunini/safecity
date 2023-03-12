@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.grayseal.safecity.ui.theme.Orange
+import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 
 @Composable
@@ -90,7 +90,7 @@ fun CustomDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = Orange,
+                                color = Green,
                                 shape = roundedCornerShape
                             )
                             .padding(horizontal = 16.dp, vertical = 8.dp),

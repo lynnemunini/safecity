@@ -2,13 +2,16 @@ package com.grayseal.safecity
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import com.google.accompanist.permissions.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -55,7 +61,7 @@ import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
 import com.grayseal.safecity.data.PoliceStation
 import com.grayseal.safecity.location.PermissionDeniedContent
-import com.grayseal.safecity.ui.theme.Orange
+import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.SafeCityTheme
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.toBitmapDrawable
@@ -209,7 +215,7 @@ fun GetCurrentLocation(
                     })
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    LinearProgressIndicator(color = Orange)
+                    LinearProgressIndicator(color = Green)
                 }
             }
         }
@@ -284,7 +290,12 @@ fun MapScreen(
                 )
             }
         }
-        Surface(modifier = Modifier.padding(20.dp), elevation = 10.dp, shape = CircleShape, color = Color.White) {
+        Surface(
+            modifier = Modifier.padding(20.dp),
+            elevation = 10.dp,
+            shape = CircleShape,
+            color = Color.White
+        ) {
             androidx.compose.material3.IconButton(
                 modifier = Modifier
                     .size(50.dp)
@@ -342,9 +353,9 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
                 "Error searching for police stations: ${exception.message}"
             )
         }
-
+    val context = LocalContext.current
     Column(
-        modifier = Modifier.height(370.dp),
+        modifier = Modifier.height(400.dp),
     ) {
         Row(
             modifier = Modifier
@@ -355,7 +366,7 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
         ) {
             Divider(
                 Modifier
-                    .width(60.dp)
+                    .width(50.dp)
                     .height(5.dp)
                     .clip(RoundedCornerShape(15.dp))
             )
@@ -387,58 +398,104 @@ fun BottomSheetContent(placesClient: PlacesClient, latitude: Double, longitude: 
         ) {
             items(items = policeStations) { policeStation ->
                 Row(
-                    modifier = Modifier
+                    Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        androidx.compose.material3.Text(
-                            policeStation.markerOptions.title.toString(),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            overflow = TextOverflow.Clip,
-                            fontFamily = poppinsFamily,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
-                        androidx.compose.material3.Text(
-                            policeStation.markerOptions.snippet.toString(),
-                            fontFamily = poppinsFamily,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_location),
+                        contentDescription = "Location",
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(end = 10.dp)
+                    )
+                    Column {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                androidx.compose.material3.Text(
+                                    policeStation.markerOptions.title.toString(),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    overflow = TextOverflow.Clip,
+                                    fontFamily = poppinsFamily,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                                androidx.compose.material3.Text(
+                                    policeStation.markerOptions.snippet.toString(),
+                                    fontFamily = poppinsFamily,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            androidx.compose.material3.Text(
+                                (policeStation.distance / 1000.0).toInt()
+                                    .toString() + " km away",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                            )
+                        }
                     }
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(top = 10.dp, start = 20.dp, end = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = {
+                            val geoUri = "http://maps.google.com/maps?daddr=" +
+                                    "${policeStation.place.latLng?.latitude},${policeStation.place.latLng?.longitude}"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
+                            startActivity(context, intent, null)
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(width = 1.dp, color = Green),
+                    ) {
                         androidx.compose.material3.Text(
-                            (policeStation.distance / 1000.0).toInt().toString() + " km away",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
+                            text = "Directions",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                            color = Green
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_directions),
+                            contentDescription = "Directions",
+                            tint = Green
                         )
                     }
-                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                        Row {
-                            androidx.compose.material3.Text(
-                                "Report here",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Orange
-                            )
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_report),
-                                contentDescription = "Report Here",
-                                tint = Orange
-                            )
-                        }
+                    androidx.compose.material3.Button(
+                        onClick = {
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Green)
+                    ) {
+                        androidx.compose.material3.Text(
+                            "Report",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_report),
+                            contentDescription = "Report Here",
+                            tint = Color.White
+                        )
                     }
                 }
                 Divider(

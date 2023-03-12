@@ -34,8 +34,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import com.grayseal.safecity.R
-import com.grayseal.safecity.ui.theme.Orange
-import com.grayseal.safecity.ui.theme.poppinsFamily
+import com.grayseal.safecity.ui.theme.Green
 import kotlinx.coroutines.launch
 
 enum class MultiFloatingState {
@@ -124,7 +123,7 @@ fun MultiFloatingActionButton(
                     )
                 },
                 shape = CircleShape,
-                containerColor = Orange,
+                containerColor = Green,
                 interactionSource = MutableInteractionSource()
             ) {
                 Icon(
@@ -167,7 +166,7 @@ fun MiniFab(
                         onMiniFabItemClick.invoke(item)
                     },
                     interactionSource = MutableInteractionSource(),
-                    indication = rememberRipple(bounded = false, radius = 20.dp, color = Orange)
+                    indication = rememberRipple(bounded = false, radius = 20.dp, color = Green)
                 ), onDraw = {
                 drawCircle(
                     color = Color.White,
@@ -180,7 +179,7 @@ fun MiniFab(
                         center.x - (item.icon.width / 2),
                         center.y - (item.icon.height / 2)
                     ),
-                    colorFilter = ColorFilter.tint(color = Orange)
+                    colorFilter = ColorFilter.tint(color = Green)
                 )
             })
     }

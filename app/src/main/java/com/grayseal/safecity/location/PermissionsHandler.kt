@@ -19,7 +19,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.shouldShowRationale
-import com.grayseal.safecity.ui.theme.Orange
+import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 
 
@@ -94,7 +94,7 @@ fun PermissionDeniedContent(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
                         .background(
-                            color = Orange,
+                            color = Green,
                             shape = RoundedCornerShape(16.dp)
                         ),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.Transparent),
