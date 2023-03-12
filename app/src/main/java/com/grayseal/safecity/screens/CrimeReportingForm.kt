@@ -1,6 +1,7 @@
 package com.grayseal.safecity.screens
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,9 @@ fun CrimeReportForm() {
     val crimes = listOf("Theft", "Burglary", "Assault", "Vandalism", "Fraud")
     var crimeExpanded by remember { mutableStateOf(false) }
     var showCalendar by remember { mutableStateOf(false) }
+    var showClock by remember {
+        mutableStateOf(false)
+    }
     val context = LocalContext.current
 
     // CALENDAR
@@ -66,6 +71,24 @@ fun CrimeReportForm() {
         cal.get(Calendar.YEAR),
         cal.get(Calendar.MONTH),
         cal.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // TIME PICKER
+    val hour = cal.get(Calendar.HOUR_OF_DAY)
+    val minute = cal.get(Calendar.MINUTE)
+
+    val timePickerDialog = TimePickerDialog(
+        context,
+        { _, selectedHour, selectedMinute ->
+            cal.set(Calendar.HOUR_OF_DAY, selectedHour)
+            cal.set(Calendar.MINUTE, selectedMinute)
+            val selectedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(cal.time)
+            time = selectedTime // set the selected time to the mutableStateOf variable
+            showClock = false
+        },
+        hour,
+        minute,
+        android.text.format.DateFormat.is24HourFormat(context)
     )
 
     Column(
@@ -104,12 +127,27 @@ fun CrimeReportForm() {
                             "Time of Crime",
                         )
                     },
+                    readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
-                    )
+                    ),
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            showClock = true
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_time),
+                                "Time",
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                        }
+                    },
                 )
+                if (showClock) {
+                    timePickerDialog.show()
+                }
                 OutlinedTextField(
                     value = date,
                     onValueChange = { date = it },
@@ -126,7 +164,7 @@ fun CrimeReportForm() {
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_calendar),
-                                "Drop down menu",
+                                "Calendar",
                                 tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                             )
                         }
@@ -143,6 +181,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
             }
@@ -230,7 +272,10 @@ fun CrimeReportForm() {
                     value = victimID,
                     onValueChange = { victimID = it },
                     placeholder = { Text("Victim National ID no.") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
@@ -245,6 +290,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
                 OutlinedTextField(
@@ -255,6 +304,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
             }
@@ -283,6 +336,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
                 OutlinedTextField(
@@ -293,6 +350,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
             }
@@ -322,6 +383,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
                 OutlinedTextField(
@@ -332,6 +397,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
                 OutlinedTextField(
@@ -342,6 +411,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
             }
@@ -374,7 +447,6 @@ fun CrimeReportForm() {
                 )
             }
         }
-
         // Other information
         Row(
             modifier = Modifier
@@ -397,6 +469,10 @@ fun CrimeReportForm() {
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         cursorColor = Green,
                         focusedBorderColor = Green
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
                     )
                 )
             }
