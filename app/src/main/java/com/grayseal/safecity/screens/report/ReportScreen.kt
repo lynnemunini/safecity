@@ -1,4 +1,4 @@
-package com.grayseal.safecity.screens
+package com.grayseal.safecity.screens.report
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -9,11 +9,11 @@ import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.text.format.DateFormat
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,19 +32,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.grayseal.safecity.R
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import java.text.SimpleDateFormat
 import java.util.*
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrimeReportForm() {
+fun ReportScreen(navController: NavController, name: String?) {
     var time by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -61,7 +60,6 @@ fun CrimeReportForm() {
 
     // Types
     val crimes = listOf("Theft", "Burglary", "Assault", "Vandalism", "Fraud")
-    var crimeExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // CALENDAR
@@ -94,7 +92,7 @@ fun CrimeReportForm() {
         },
         hour,
         minute,
-        android.text.format.DateFormat.is24HourFormat(context)
+        DateFormat.is24HourFormat(context)
     )
 
     var imageUri by remember {
@@ -146,12 +144,19 @@ fun CrimeReportForm() {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(
-            "Report a crime",
-            fontFamily = poppinsFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 22.sp
-        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "Report a crime",
+                fontFamily = poppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp
+            )
+            Text(
+                name.toString(),
+                fontFamily = poppinsFamily,
+                fontSize = 12.sp
+            )
+        }
         // Incident details
         Row(
             modifier = Modifier
@@ -479,7 +484,6 @@ fun CrimeReportForm() {
                 }
             }
         }
-
         // Other information
         Row(
             modifier = Modifier
