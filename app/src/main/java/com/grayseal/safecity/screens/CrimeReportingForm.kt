@@ -248,49 +248,20 @@ fun CrimeReportForm() {
                     fontFamily = poppinsFamily,
                     fontSize = 13.sp
                 )
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = crimeDescription,
-                        onValueChange = { crimeDescription = it },
-                        placeholder = { Text("Crime description") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            cursorColor = Green,
-                            focusedBorderColor = Green
-                        ),
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                crimeExpanded = true
-                            }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_arrow),
-                                    "Drop down menu",
-                                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                                )
-                            }
-                        },
-                        readOnly = true,
-                    )
-                    if (crimeExpanded) {
-                        DropdownMenu(
-                            expanded = true,
-                            onDismissRequest = { },
-                            modifier = Modifier.background(color = Color.White)
-                        ) {
-                            crimes.forEach { crime ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(text = crime)
-                                    },
-                                    onClick = {
-                                        crimeDescription = crime
-                                        crimeExpanded = false
-                                    },
-                                    modifier = Modifier.widthIn(max = 300.dp),
-                                    interactionSource = MutableInteractionSource()
-                                )
-                            }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    crimes.forEach { crime ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = crimeDescription == crime,
+                                onClick = { crimeDescription = crime },
+                                interactionSource = MutableInteractionSource(),
+                                colors = RadioButtonDefaults.colors(selectedColor = Green)
+                            )
+                            Text(
+                                text = crime,
+                                modifier = Modifier.padding(start = 8.dp),
+                                fontSize = 14.sp
+                            )
                         }
                     }
                 }
@@ -401,7 +372,6 @@ fun CrimeReportForm() {
                 )
             }
         }
-
         // Witness information
         Row(
             modifier = Modifier
@@ -462,7 +432,6 @@ fun CrimeReportForm() {
                 )
             }
         }
-
         // Evidence
         Row(
             modifier = Modifier
@@ -503,7 +472,7 @@ fun CrimeReportForm() {
                     Text(
                         "Select File",
                         fontFamily = poppinsFamily,
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         color = Green,
                         fontWeight = FontWeight.Bold
                     )
