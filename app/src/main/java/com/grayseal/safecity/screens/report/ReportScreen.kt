@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -144,18 +145,35 @@ fun ReportScreen(navController: NavController, name: String?) {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_close),
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable(onClick = {
+                        navController.popBackStack()
+                    })
+            )
+        }
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                "Report a crime",
-                fontFamily = poppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
-            )
-            Text(
-                name.toString(),
-                fontFamily = poppinsFamily,
-                fontSize = 12.sp
-            )
+            Column {
+                Text(
+                    "Report a crime",
+                    fontFamily = poppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+                Text(
+                    name.toString(),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
         }
         // Incident details
         Row(
