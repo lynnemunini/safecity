@@ -231,7 +231,7 @@ fun GetCurrentLocation(navController: NavController) {
                                                                 alpha = 0.4f
                                                             ),
                                                             modifier = Modifier
-                                                                .size(38.dp)
+                                                                .size(35.dp)
                                                                 .padding(end = 10.dp)
                                                         )
                                                         Text(
