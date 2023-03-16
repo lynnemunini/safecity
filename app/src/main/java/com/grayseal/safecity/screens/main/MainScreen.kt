@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +63,7 @@ import com.grayseal.safecity.data.navigationDrawerItems
 import com.grayseal.safecity.location.PermissionDeniedContent
 import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.ui.theme.Green
+import com.grayseal.safecity.ui.theme.LightGreen
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.calculateDistance
 import com.grayseal.safecity.utils.searchForPoliceStations
@@ -418,6 +420,7 @@ fun BottomSheetContent(
                         )
                         val station = PoliceStation(markerOptions, prediction, place, distance)
                         policeStations += station
+                        policeStations = policeStations.sortedBy { it.distance }
                     }
                     .addOnFailureListener { exception ->
                         Log.e(
@@ -468,124 +471,260 @@ fun BottomSheetContent(
                 .padding(horizontal = 20.dp)
                 .padding(top = 4.dp, bottom = 15.dp)
         )
-        Divider(
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
-        )
         LazyColumn(
             modifier = Modifier
                 .padding(bottom = 5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            // Find Nearest Police Station
+            val nearestPoliceStation = policeStations.firstOrNull()
             items(items = policeStations) { policeStation ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_location),
-                        contentDescription = "Location",
-                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                if (policeStation == nearestPoliceStation) {
+                    Column(
                         modifier = Modifier
-                            .size(32.dp)
-                            .padding(end = 10.dp)
-                    )
-                    Column {
+                            .fillMaxWidth()
+                            .background(color = LightGreen)
+                    ) {
                         Row(
                             Modifier
                                 .fillMaxWidth()
+                                .padding(start = 20.dp, end = 20.dp, top = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    policeStation.markerOptions.title.toString(),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    overflow = TextOverflow.Clip,
-                                    fontFamily = poppinsFamily,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                                Text(
-                                    policeStation.markerOptions.snippet.toString(),
-                                    fontFamily = poppinsFamily,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                                )
+                            Icon(
+                                painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_location),
+                                contentDescription = "Location",
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(end = 10.dp)
+                            )
+                            Column {
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                policeStation.markerOptions.title.toString(),
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                overflow = TextOverflow.Clip,
+                                                fontFamily = poppinsFamily,
+                                                color = MaterialTheme.colorScheme.onBackground
+                                            )
+                                            Surface(
+                                                shape = RoundedCornerShape(30.dp),
+                                                color = Green,
+                                                elevation = 4.dp,
+                                            ) {
+                                                Text(
+                                                    "Recommended",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontFamily = poppinsFamily,
+                                                    color = Color.White,
+                                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 10.dp)
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            policeStation.markerOptions.snippet.toString(),
+                                            fontFamily = poppinsFamily,
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onBackground.copy(
+                                                alpha = 0.6f
+                                            ),
+                                        )
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                ) {
+                                    Text(
+                                        (policeStation.distance / 1000.0).toInt()
+                                            .toString() + " km away",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                                    )
+                                }
                             }
                         }
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
+                                .fillMaxWidth()
+                                .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val geoUri = "http://maps.google.com/maps?daddr=" +
+                                            "${policeStation.place.latLng?.latitude},${policeStation.place.latLng?.longitude}"
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
+                                    ContextCompat.startActivity(context, intent, null)
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                border = BorderStroke(width = 1.dp, color = Green),
+                            ) {
+                                Text(
+                                    text = "Directions",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Green
+                                )
+                                Icon(
+                                    painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_directions),
+                                    contentDescription = "Directions",
+                                    tint = Green
+                                )
+                            }
+                            Button(
+                                onClick = {
+                                    navController.navigate(
+                                        route = Screen.ReportScreen.withArgs(
+                                            policeStation.markerOptions.title.toString()
+                                        )
+                                    )
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Green),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                            ) {
+                                Text(
+                                    "Report",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White
+                                )
+                                Icon(
+                                    painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_report),
+                                    contentDescription = "Report Here",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp, top = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_location),
+                            contentDescription = "Location",
+                            tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .size(32.dp)
+                                .padding(end = 10.dp)
+                        )
+                        Column {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        policeStation.markerOptions.title.toString(),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        overflow = TextOverflow.Clip,
+                                        fontFamily = poppinsFamily,
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                    Text(
+                                        policeStation.markerOptions.snippet.toString(),
+                                        fontFamily = poppinsFamily,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                    )
+                                }
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    (policeStation.distance / 1000.0).toInt()
+                                        .toString() + " km away",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                                )
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                val geoUri = "http://maps.google.com/maps?daddr=" +
+                                        "${policeStation.place.latLng?.latitude},${policeStation.place.latLng?.longitude}"
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
+                                ContextCompat.startActivity(context, intent, null)
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(width = 1.dp, color = Green),
                         ) {
                             Text(
-                                (policeStation.distance / 1000.0).toInt()
-                                    .toString() + " km away",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                text = "Directions",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                                color = Green
+                            )
+                            Icon(
+                                painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_directions),
+                                contentDescription = "Directions",
+                                tint = Green
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                navController.navigate(
+                                    route = Screen.ReportScreen.withArgs(
+                                        policeStation.markerOptions.title.toString()
+                                    )
+                                )
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Green),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                        ) {
+                            Text(
+                                "Report",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White
+                            )
+                            Icon(
+                                painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_report),
+                                contentDescription = "Report Here",
+                                tint = Color.White
                             )
                         }
                     }
+                    Divider(
+                        modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
+                    )
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp, start = 20.dp, end = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            val geoUri = "http://maps.google.com/maps?daddr=" +
-                                    "${policeStation.place.latLng?.latitude},${policeStation.place.latLng?.longitude}"
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
-                            ContextCompat.startActivity(context, intent, null)
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(width = 1.dp, color = Green),
-                    ) {
-                        Text(
-                            text = "Directions",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Green
-                        )
-                        Icon(
-                            painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_directions),
-                            contentDescription = "Directions",
-                            tint = Green
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            navController.navigate(
-                                route = Screen.ReportScreen.withArgs(
-                                    policeStation.markerOptions.title.toString()
-                                )
-                            )
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Green)
-                    ) {
-                        Text(
-                            "Report",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White
-                        )
-                        Icon(
-                            painter = painterResource(id = com.grayseal.safecity.R.drawable.ic_report),
-                            contentDescription = "Report Here",
-                            tint = Color.White
-                        )
-                    }
-                }
-                Divider(
-                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
-                )
             }
         }
     }
