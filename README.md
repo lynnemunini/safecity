@@ -6,8 +6,8 @@ SafeCity App is a mobile application that allows users to report crimes and othe
 ## 📱 Screenshots
 The app retrieves the user location and displays it on a map. Google Maps API is used to display the map. The app also retrieves the device location co-ordinates and displays it on the map. The app also allows users to report crimes and other incidents in their area. The app also allows users to view crime hotspots in their area and also view the crime statistics of their area.
 
-<img src="images/map.png"/>
-<img src="images/report.png"/>
+<img src="images/map.png" width="80%"/>
+<img src="images/report.png" width="80%"/>
 
 ## 🛠 Tech/framework used
 **Built with**
