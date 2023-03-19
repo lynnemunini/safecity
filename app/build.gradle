@@ -3,6 +3,9 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     //Secrets gradle plugin
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    // To enable using hilt for dependency injection
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
@@ -79,4 +82,20 @@ dependencies {
     implementation "com.google.accompanist:accompanist-permissions:0.28.0"
     // Places SDK for android
     implementation 'com.google.android.libraries.places:places:3.0.0'
+
+    // Dagger - Hilt
+    implementation 'com.google.dagger:hilt-android:2.44.2'
+    kapt 'com.google.dagger:hilt-compiler:2.44.2'
+
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    //GSON converter
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    // OkHttp
+    implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.2"
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes = true
 }
