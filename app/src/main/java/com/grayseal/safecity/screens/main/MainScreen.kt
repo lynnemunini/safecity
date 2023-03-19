@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -58,9 +58,11 @@ import com.grayseal.safecity.BuildConfig
 import com.grayseal.safecity.components.MiniFabItem
 import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
+import com.grayseal.safecity.data.DataOrException
 import com.grayseal.safecity.data.PoliceStation
 import com.grayseal.safecity.data.navigationDrawerItems
 import com.grayseal.safecity.location.PermissionDeniedContent
+import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.LightGreen
@@ -81,6 +83,22 @@ fun MainScreen(navController: NavController) {
 @ExperimentalPermissionsApi
 @Composable
 fun GetCurrentLocation(navController: NavController) {
+    val viewModel: MainViewModel = hiltViewModel()
+
+    val hotspotAreas = produceState<DataOrException<ArrayList<SafeCityItem>, Boolean, Exception>>(
+        initialValue = DataOrException(loading = (true))
+    ) {
+        val areas = viewModel.getAllAreas()
+        value = if (areas.data != null) {
+            DataOrException(data = areas.data?.take(50) as ArrayList<SafeCityItem>)
+        } else {
+            DataOrException(loading = (true))
+        }
+    }.value.data
+
+
+    Log.d("HOTSPOTS", "$hotspotAreas")
+
     val context = LocalContext.current
     Places.initialize(context, BuildConfig.MAPS_API_KEY)
     val placesClient = Places.createClient(context)
@@ -122,6 +140,7 @@ fun GetCurrentLocation(navController: NavController) {
         )
     )
 
+
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
         deniedContent = { shouldShowRationale ->
@@ -160,7 +179,7 @@ fun GetCurrentLocation(navController: NavController) {
                     Toast.makeText(context, "Error Fetching Location", Toast.LENGTH_LONG).show()
                 }
             }
-            if (showMap) {
+            if (showMap && hotspotAreas != null) {
                 BottomSheetScaffold(
                     scaffoldState = sheetScaffoldState,
                     sheetElevation = 40.dp,
@@ -271,9 +290,9 @@ fun GetCurrentLocation(navController: NavController) {
                             content = {
                                 Box {
                                     MapScreen(
-                                        placesClient = placesClient,
                                         latitude = latitude,
-                                        longitude = longitude
+                                        longitude = longitude,
+                                        hotspotAreas = hotspotAreas,
                                     ) {
                                         scope.launch {
                                             drawerState.open()
@@ -302,20 +321,32 @@ fun GetCurrentLocation(navController: NavController) {
 
 @Composable
 fun MapScreen(
-    placesClient: PlacesClient,
     latitude: Double,
     longitude: Double,
+    hotspotAreas: ArrayList<SafeCityItem>,
     onMenuClick: () -> Unit,
 ) {
     val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 17f)
+        position = CameraPosition.fromLatLngZoom(location, 15f)
     }
     val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
+    // Mark HotSpot Areas
     var markers by remember { mutableStateOf(emptyList<MarkerOptions>()) }
+    hotspotAreas.forEach { area ->
+        val markerOptions = MarkerOptions()
+            .position(LatLng(area.Latitude, area.Longitude))
+            .title("CRIME HOTSPOT")
+            .snippet(
+                "${area.Reports} made in this area.\n ${area.Category} is the most " +
+                        "frequent crime here"
+            )
+        markers += markerOptions
+    }
+
 
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
@@ -324,37 +355,7 @@ fun MapScreen(
             uiSettings = uiSettings,
             cameraPositionState = cameraPositionState,
             onMapLoaded = {
-                // Search for police stations and add markers to the map
-                searchForPoliceStations(placesClient, latitude, longitude)
-                    .addOnSuccessListener { response ->
-                        val markerOptionsList = response.autocompletePredictions.map { prediction ->
-                            val placeId = prediction.placeId
-                            val placeFields = listOf(Place.Field.LAT_LNG)
-                            val request = FetchPlaceRequest.builder(placeId, placeFields).build()
-                            placesClient.fetchPlace(request)
-                                .addOnSuccessListener { response ->
-                                    val place = response.place
-                                    val latLng = place.latLng
-                                    val markerOptions = MarkerOptions()
-                                        .position(LatLng(latLng!!.latitude, latLng.longitude))
-                                        .title(prediction.getPrimaryText(null).toString())
-                                        .snippet(prediction.getSecondaryText(null).toString())
-                                    markers += markerOptions
-                                }
-                                .addOnFailureListener { exception ->
-                                    Log.e(
-                                        "RETRIEVING PLACES FAILED",
-                                        "Error fetching place details: ${exception.message}"
-                                    )
-                                }
-                        }
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e(
-                            "POLICE STATIONS FAILED",
-                            "Error searching for police stations: ${exception.message}"
-                        )
-                    }
+                // DO SOMETHING WHEN THE MAP LOADS
             }
         ) {
             markers.forEach { marker ->
@@ -528,7 +529,10 @@ fun BottomSheetContent(
                                                     fontWeight = FontWeight.SemiBold,
                                                     fontFamily = poppinsFamily,
                                                     color = Color.White,
-                                                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 10.dp)
+                                                    modifier = Modifier.padding(
+                                                        vertical = 4.dp,
+                                                        horizontal = 10.dp
+                                                    )
                                                 )
                                             }
                                         }

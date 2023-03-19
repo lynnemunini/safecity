@@ -7,6 +7,6 @@ import javax.inject.Singleton
 @Singleton
 interface SafeCityAPI {
 
-    @GET
+    @GET("data.json")
     suspend fun getAllAreas(): SafeCity
 }
