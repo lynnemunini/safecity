@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +73,7 @@ import com.grayseal.safecity.utils.searchForPoliceStations
 import com.grayseal.safecity.utils.toBitmapDrawable
 import com.grayseal.safecity.utils.toImageBitmap
 import kotlinx.coroutines.launch
+import java.lang.Math.abs
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -95,9 +97,6 @@ fun GetCurrentLocation(navController: NavController) {
             DataOrException(loading = (true))
         }
     }.value.data
-
-
-    Log.d("HOTSPOTS", "$hotspotAreas")
 
     val context = LocalContext.current
     Places.initialize(context, BuildConfig.MAPS_API_KEY)
@@ -139,7 +138,6 @@ fun GetCurrentLocation(navController: NavController) {
             identifier = "CallFab"
         )
     )
-
 
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
@@ -326,10 +324,10 @@ fun MapScreen(
     hotspotAreas: ArrayList<SafeCityItem>,
     onMenuClick: () -> Unit,
 ) {
-    val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = false)) }
+    val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = true)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 15f)
+        position = CameraPosition.fromLatLngZoom(location, 13f)
     }
     val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
@@ -341,8 +339,7 @@ fun MapScreen(
             .position(LatLng(area.Latitude, area.Longitude))
             .title("CRIME HOTSPOT")
             .snippet(
-                "${area.Reports} made in this area.\n ${area.Category} is the most " +
-                        "frequent crime here"
+                area.Category.capitalize()
             )
         markers += markerOptions
     }
