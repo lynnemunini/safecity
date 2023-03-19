@@ -15,6 +15,10 @@ import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 import com.google.android.libraries.places.api.net.PlacesClient
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 // Extension function to convert a Drawable to a BitmapDrawable
 fun Drawable.toBitmapDrawable(context: Context): BitmapDrawable {
@@ -60,4 +64,19 @@ fun calculateDistance(currentLocation: LatLng, policeStationLocation: LatLng): D
         policeStationLocation.latitude, policeStationLocation.longitude, results
     )
     return results[0].toDouble()
+}
+
+fun checkDistanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    val r = 6371e3 // Earth's radius in meters
+    val phi1 = Math.toRadians(lat1)
+    val phi2 = Math.toRadians(lat2)
+    val deltaPhi = Math.toRadians(lat2 - lat1)
+    val deltaLambda = Math.toRadians(lon2 - lon1)
+
+    val a = sin(deltaPhi / 2) * sin(deltaPhi / 2) +
+            cos(phi1) * cos(phi2) *
+            sin(deltaLambda / 2) * sin(deltaLambda / 2)
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return r * c
 }

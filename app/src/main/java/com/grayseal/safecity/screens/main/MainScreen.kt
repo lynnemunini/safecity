@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,12 +67,8 @@ import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.LightGreen
 import com.grayseal.safecity.ui.theme.poppinsFamily
-import com.grayseal.safecity.utils.calculateDistance
-import com.grayseal.safecity.utils.searchForPoliceStations
-import com.grayseal.safecity.utils.toBitmapDrawable
-import com.grayseal.safecity.utils.toImageBitmap
+import com.grayseal.safecity.utils.*
 import kotlinx.coroutines.launch
-import java.lang.Math.abs
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -92,7 +87,7 @@ fun GetCurrentLocation(navController: NavController) {
     ) {
         val areas = viewModel.getAllAreas()
         value = if (areas.data != null) {
-            DataOrException(data = areas.data?.take(50) as ArrayList<SafeCityItem>)
+            DataOrException(data = areas.data?.take(200) as ArrayList<SafeCityItem>)
         } else {
             DataOrException(loading = (true))
         }
@@ -139,6 +134,26 @@ fun GetCurrentLocation(navController: NavController) {
         )
     )
 
+    val maxDistance = 10000 // Maximum distance in meters
+    val filteredSequence = hotspotAreas?.asSequence()
+        ?.filter {
+            checkDistanceBetween(
+                latitude,
+                longitude,
+                it.Latitude,
+                it.Longitude
+            ) <= maxDistance
+        }
+    val nearbyHotspots = filteredSequence?.toList()
+
+    var loading by remember {
+        mutableStateOf(true)
+    }
+
+    if (nearbyHotspots != null) {
+        loading = false
+    }
+
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
         deniedContent = { shouldShowRationale ->
@@ -177,7 +192,7 @@ fun GetCurrentLocation(navController: NavController) {
                     Toast.makeText(context, "Error Fetching Location", Toast.LENGTH_LONG).show()
                 }
             }
-            if (showMap && hotspotAreas != null) {
+            if (showMap && hotspotAreas != null && !loading) {
                 BottomSheetScaffold(
                     scaffoldState = sheetScaffoldState,
                     sheetElevation = 40.dp,
@@ -290,7 +305,7 @@ fun GetCurrentLocation(navController: NavController) {
                                     MapScreen(
                                         latitude = latitude,
                                         longitude = longitude,
-                                        hotspotAreas = hotspotAreas,
+                                        hotspotAreas = nearbyHotspots!!,
                                     ) {
                                         scope.launch {
                                             drawerState.open()
@@ -321,13 +336,13 @@ fun GetCurrentLocation(navController: NavController) {
 fun MapScreen(
     latitude: Double,
     longitude: Double,
-    hotspotAreas: ArrayList<SafeCityItem>,
+    hotspotAreas: List<SafeCityItem>,
     onMenuClick: () -> Unit,
 ) {
     val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = true)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 13f)
+        position = CameraPosition.fromLatLngZoom(location, 15f)
     }
     val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
