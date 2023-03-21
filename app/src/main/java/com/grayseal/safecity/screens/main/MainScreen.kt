@@ -1,6 +1,7 @@
 package com.grayseal.safecity.screens.main
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -68,7 +71,7 @@ import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.LightGreen
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -85,11 +88,9 @@ fun GetCurrentLocation(navController: NavController) {
     val hotspotAreas = produceState<DataOrException<ArrayList<SafeCityItem>, Boolean, Exception>>(
         initialValue = DataOrException(loading = (true))
     ) {
-        val areas = viewModel.getAllAreas()
-        value = if (areas.data != null) {
-            DataOrException(data = areas.data?.take(200) as ArrayList<SafeCityItem>)
-        } else {
-            DataOrException(loading = (true))
+        val areas = viewModel.getAllAreas().data
+        if (areas != null) {
+            value = viewModel.getAllAreas()
         }
     }.value.data
 
@@ -115,10 +116,6 @@ fun GetCurrentLocation(navController: NavController) {
     val sheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
     )
-    val scope = rememberCoroutineScope()
-    var multiFloatingState by remember {
-        mutableStateOf(MultiFloatingState.Collapsed)
-    }
     val items = listOf(
         MiniFabItem(
             icon = ContextCompat.getDrawable(context, com.grayseal.safecity.R.drawable.ic_report)
@@ -133,25 +130,29 @@ fun GetCurrentLocation(navController: NavController) {
             identifier = "CallFab"
         )
     )
-
-    val maxDistance = 10000 // Maximum distance in meters
-    val filteredSequence = hotspotAreas?.asSequence()
-        ?.filter {
-            checkDistanceBetween(
-                latitude,
-                longitude,
-                it.Latitude,
-                it.Longitude
-            ) <= maxDistance
-        }
-    val nearbyHotspots = filteredSequence?.toList()
-
+    var nearbyHotspots: List<SafeCityItem>? by remember {
+        mutableStateOf(null)
+    }
     var loading by remember {
         mutableStateOf(true)
+    }
+    val maxDistance = 5000 // Maximum distance in meters
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(hotspotAreas) {
+        scope.launch {
+            nearbyHotspots =
+                try {
+                    retrieveHotspots(maxDistance, latitude, longitude, hotspotAreas)
+                } catch (e: Exception) {
+                    null
+                }
+        }
     }
 
     if (nearbyHotspots != null) {
         loading = false
+        Log.d("NEARBY", "$nearbyHotspots")
     }
 
     com.grayseal.safecity.location.HandleRequest(
@@ -162,174 +163,206 @@ fun GetCurrentLocation(navController: NavController) {
                         "permission is required to use the app",
                 shouldShowRationale = shouldShowRationale
             ) { permissionState.launchPermissionRequest() }
+        }
+    ) {
+        // Check to see if permission is available
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            try {
+                val locationResult = fusedLocationClient.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    CancellationTokenSource().token
+                )
+
+                locationResult.addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        latitude = location.latitude
+                        longitude = location.longitude
+                        showMap = true
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error Fetching Location", Toast.LENGTH_LONG).show()
+            }
+        }
+        if (showMap && hotspotAreas != null && !loading) {
+            nearbyHotspots?.let {
+                SafeCityScaffold(
+                    navController = navController,
+                    placesClient = placesClient,
+                    latitude = latitude,
+                    longitude = longitude,
+                    sheetScaffoldState = sheetScaffoldState,
+                    drawerState = drawerState,
+                    sheetState = sheetState,
+                    nearbyHotspots = it,
+                    fabItems = items,
+                    scope = scope
+                )
+            }
+
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                LinearProgressIndicator(color = Green)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@Composable
+fun SafeCityScaffold(
+    navController: NavController,
+    placesClient: PlacesClient,
+    latitude: Double,
+    longitude: Double,
+    sheetScaffoldState: BottomSheetScaffoldState,
+    drawerState: DrawerState,
+    sheetState: BottomSheetState,
+    nearbyHotspots: List<SafeCityItem>,
+    fabItems: List<MiniFabItem>,
+    scope: CoroutineScope
+) {
+    var multiFloatingState by remember {
+        mutableStateOf(MultiFloatingState.Collapsed)
+    }
+    BottomSheetScaffold(
+        scaffoldState = sheetScaffoldState,
+        sheetElevation = 40.dp,
+        sheetBackgroundColor = Color.White,
+        sheetPeekHeight = 0.dp,
+        sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
+        floatingActionButton = {
+            MultiFloatingActionButton(
+                multiFloatingState = multiFloatingState,
+                sheetState = sheetState,
+                drawerState = drawerState,
+                onMultiFabStateChange = {
+                    multiFloatingState = it
+                },
+                items = fabItems
+            )
+        },
+        sheetContent = {
+            BottomSheetContent(
+                navController = navController,
+                placesClient = placesClient,
+                latitude = latitude,
+                longitude = longitude
+            )
         },
         content = {
-            // Check to see if permission is available
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                try {
-                    val locationResult = fusedLocationClient.getCurrentLocation(
-                        Priority.PRIORITY_HIGH_ACCURACY,
-                        CancellationTokenSource().token
-                    )
-
-                    locationResult.addOnSuccessListener { location: Location? ->
-                        // Get location. In some rare situations this can be null.
-                        if (location != null) {
-                            latitude = location.latitude
-                            longitude = location.longitude
-                            showMap = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Error Fetching Location", Toast.LENGTH_LONG).show()
-                }
-            }
-            if (showMap && hotspotAreas != null && !loading) {
-                BottomSheetScaffold(
-                    scaffoldState = sheetScaffoldState,
-                    sheetElevation = 40.dp,
-                    sheetBackgroundColor = Color.White,
-                    sheetPeekHeight = 0.dp,
-                    sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
-                    floatingActionButton = {
-                        MultiFloatingActionButton(
-                            multiFloatingState = multiFloatingState,
-                            sheetState = sheetState,
-                            drawerState = drawerState,
-                            onMultiFabStateChange = {
-                                multiFloatingState = it
-                            },
-                            items = items
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                scrimColor = Color.Black.copy(alpha = 0.5f),
+                drawerContent = {
+                    ModalDrawerSheet(
+                        modifier = Modifier.width(290.dp),
+                        drawerShape = RectangleShape,
+                        drawerContainerColor = MaterialTheme.colorScheme.background,
+                        drawerTonalElevation = 0.dp,
+                    ) {
+                        Spacer(Modifier.height(30.dp))
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(15.dp),
+                            color = MaterialTheme.colorScheme.onBackground.copy(
+                                alpha = 0.1f
+                            )
                         )
-                    },
-                    sheetContent = {
-                        BottomSheetContent(
-                            navController = navController,
-                            placesClient = placesClient,
-                            latitude = latitude,
-                            longitude = longitude
-                        )
-                    },
-                    content = {
-                        ModalNavigationDrawer(
-                            drawerState = drawerState,
-                            scrimColor = Color.Black.copy(alpha = 0.5f),
-                            drawerContent = {
-                                ModalDrawerSheet(
-                                    modifier = Modifier.width(290.dp),
-                                    drawerShape = RectangleShape,
-                                    drawerContainerColor = MaterialTheme.colorScheme.background,
-                                    drawerTonalElevation = 0.dp,
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 20.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(40.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Spacer(Modifier.height(30.dp))
-                                    Divider(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(15.dp),
-                                        color = MaterialTheme.colorScheme.onBackground.copy(
-                                            alpha = 0.1f
-                                        )
-                                    )
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 20.dp, vertical = 20.dp),
-                                        horizontalAlignment = Alignment.Start
-                                    ) {
-                                        Row(modifier = Modifier.fillMaxWidth()) {
-                                            Column(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                verticalArrangement = Arrangement.spacedBy(40.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                navigationDrawerItems.forEach {
-                                                    Row(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(horizontal = 20.dp),
-                                                        horizontalArrangement = Arrangement.Start,
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        Icon(
-                                                            painter = painterResource(id = it.icon),
-                                                            contentDescription = it.name,
-                                                            tint = MaterialTheme.colorScheme.onBackground.copy(
-                                                                alpha = 0.4f
-                                                            ),
-                                                            modifier = Modifier
-                                                                .size(35.dp)
-                                                                .padding(end = 10.dp)
-                                                        )
-                                                        Text(
-                                                            text = it.name,
-                                                            fontSize = 15.sp,
-                                                            fontFamily = poppinsFamily,
-                                                            fontWeight = FontWeight.Medium,
-                                                            color = MaterialTheme.colorScheme.onBackground.copy(
-                                                                alpha = 0.8f
-                                                            ),
-                                                            modifier = Modifier.align(Alignment.CenterVertically)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    navigationDrawerItems.forEach {
                                         Row(
                                             modifier = Modifier
-                                                .fillMaxSize(),
-                                            horizontalArrangement = Arrangement.End,
-                                            verticalAlignment = Alignment.Bottom
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 20.dp),
+                                            horizontalArrangement = Arrangement.Start,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
+                                            Icon(
+                                                painter = painterResource(id = it.icon),
+                                                contentDescription = it.name,
+                                                tint = MaterialTheme.colorScheme.onBackground.copy(
+                                                    alpha = 0.4f
+                                                ),
+                                                modifier = Modifier
+                                                    .size(35.dp)
+                                                    .padding(end = 10.dp)
+                                            )
                                             Text(
-                                                text = "© 2023",
-                                                fontSize = 12.sp,
+                                                text = it.name,
+                                                fontSize = 15.sp,
                                                 fontFamily = poppinsFamily,
-                                                fontWeight = FontWeight.Normal,
-                                                textAlign = TextAlign.End,
-                                                modifier = Modifier.align(Alignment.Bottom)
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(
+                                                    alpha = 0.8f
+                                                ),
+                                                modifier = Modifier.align(Alignment.CenterVertically)
                                             )
                                         }
                                     }
                                 }
-                            },
-                            content = {
-                                Box {
-                                    MapScreen(
-                                        latitude = latitude,
-                                        longitude = longitude,
-                                        hotspotAreas = nearbyHotspots!!,
-                                    ) {
-                                        scope.launch {
-                                            drawerState.open()
-                                        }
-                                    }
-                                    // transparent overlay on top of content, shown if sheet is expanded
-                                    if (sheetState.isExpanded || multiFloatingState == MultiFloatingState.Expanded) {
-                                        Box(
-                                            modifier = Modifier
-                                                .background(Color.Black.copy(alpha = 0.5f))
-                                                .fillMaxSize()
-                                        ) {}
-                                    }
-                                }
-                            },
-                        )
-                    })
-            } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    LinearProgressIndicator(color = Green)
-                }
-            }
-        }
-    )
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = "© 2023",
+                                    fontSize = 12.sp,
+                                    fontFamily = poppinsFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.align(Alignment.Bottom)
+                                )
+                            }
+                        }
+                    }
+                },
+                content = {
+                    Box {
+                        MapScreen(
+                            latitude = latitude,
+                            longitude = longitude,
+                            hotspotAreas = nearbyHotspots,
+                        ) {
+                            scope.launch {
+                                drawerState.open()
+                            }
+                        }
+                        // transparent overlay on top of content, shown if sheet is expanded
+                        if (sheetState.isExpanded || multiFloatingState == MultiFloatingState.Expanded) {
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.Black.copy(alpha = 0.5f))
+                                    .fillMaxSize()
+                            ) {}
+                        }
+                    }
+                },
+            )
+        })
 }
 
 @Composable
@@ -342,7 +375,7 @@ fun MapScreen(
     val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = true)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 15f)
+        position = CameraPosition.fromLatLngZoom(location, 16.5f)
     }
     val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
@@ -358,8 +391,23 @@ fun MapScreen(
             )
         markers += markerOptions
     }
+    Map(
+        properties = properties,
+        uiSettings = uiSettings,
+        markers = markers,
+        cameraPositionState = cameraPositionState,
+        onMenuClick = onMenuClick
+    )
+}
 
-
+@Composable
+fun Map(
+    properties: MapProperties,
+    uiSettings: MapUiSettings,
+    markers: List<MarkerOptions>,
+    cameraPositionState: CameraPositionState,
+    onMenuClick: () -> Unit
+) {
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.matchParentSize(),
@@ -415,7 +463,7 @@ fun BottomSheetContent(
     // Search for police stations and add markers to the map
     searchForPoliceStations(placesClient, latitude, longitude)
         .addOnSuccessListener { response ->
-            val markerOptionsList = response.autocompletePredictions.map { prediction ->
+            response.autocompletePredictions.map { prediction ->
                 val placeId = prediction.placeId
                 val placeFields = listOf(Place.Field.LAT_LNG)
                 val request = FetchPlaceRequest.builder(placeId, placeFields).build()
@@ -450,6 +498,15 @@ fun BottomSheetContent(
             )
         }
     val context = LocalContext.current
+    BottomSheet(navController = navController, policeStations = policeStations, context = context)
+}
+
+@Composable
+fun BottomSheet(
+    navController: NavController,
+    policeStations: List<PoliceStation>,
+    context: Context
+) {
     Column(
         modifier = Modifier.height(400.dp),
     ) {
@@ -743,5 +800,26 @@ fun BottomSheetContent(
                 }
             }
         }
+    }
+}
+
+suspend fun retrieveHotspots(
+    maxDistance: Int,
+    latitude: Double,
+    longitude: Double,
+    hotspotAreas: ArrayList<SafeCityItem>?
+): List<SafeCityItem>? {
+    return withContext(Dispatchers.IO) {
+        Log.d("HOTSPOT", "$hotspotAreas")
+        val filteredSequence = hotspotAreas?.asSequence()
+            ?.filter {
+                checkDistanceBetween(
+                    latitude,
+                    longitude,
+                    it.Latitude,
+                    it.Longitude
+                ) <= maxDistance
+            }
+        filteredSequence?.toList()
     }
 }
