@@ -1,7 +1,6 @@
 package com.grayseal.safecity.screens.main
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -72,6 +70,7 @@ import com.grayseal.safecity.ui.theme.LightGreen
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.*
 import kotlinx.coroutines.*
+import java.util.*
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -387,7 +386,7 @@ fun MapScreen(
             .position(LatLng(area.Latitude, area.Longitude))
             .title("CRIME HOTSPOT")
             .snippet(
-                area.Category.capitalize()
+                area.Category.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
             )
         markers += markerOptions
     }
@@ -460,6 +459,7 @@ fun BottomSheetContent(
     longitude: Double
 ) {
     var policeStations by remember { mutableStateOf(emptyList<PoliceStation>()) }
+    val context = LocalContext.current
     // Search for police stations and add markers to the map
     searchForPoliceStations(placesClient, latitude, longitude)
         .addOnSuccessListener { response ->
@@ -497,16 +497,6 @@ fun BottomSheetContent(
                 "Error searching for police stations: ${exception.message}"
             )
         }
-    val context = LocalContext.current
-    BottomSheet(navController = navController, policeStations = policeStations, context = context)
-}
-
-@Composable
-fun BottomSheet(
-    navController: NavController,
-    policeStations: List<PoliceStation>,
-    context: Context
-) {
     Column(
         modifier = Modifier.height(400.dp),
     ) {
@@ -534,7 +524,8 @@ fun BottomSheet(
                 .padding(top = 10.dp)
         )
         Text(
-            text = "Are you looking to report a crime? Here's a list of police stations located near you.",
+            text = "Are you looking to report a crime? Here's a list of police stations " +
+                    "located near you.",
             fontFamily = poppinsFamily,
             fontSize = 12.sp,
             modifier = Modifier
@@ -748,7 +739,8 @@ fun BottomSheet(
                         OutlinedButton(
                             onClick = {
                                 val geoUri = "http://maps.google.com/maps?daddr=" +
-                                        "${policeStation.place.latLng?.latitude},${policeStation.place.latLng?.longitude}"
+                                        "${policeStation.place.latLng?.latitude}," +
+                                        "${policeStation.place.latLng?.longitude}"
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(geoUri))
                                 ContextCompat.startActivity(context, intent, null)
                             },
