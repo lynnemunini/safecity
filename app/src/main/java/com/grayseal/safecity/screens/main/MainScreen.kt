@@ -461,7 +461,9 @@ fun BottomSheetContent(
     var policeStations by remember { mutableStateOf(emptyList<PoliceStation>()) }
     val context = LocalContext.current
     // Search for police stations and add markers to the map
-    searchForPoliceStations(placesClient, latitude, longitude)
+    // Call searchForPoliceStations only once using LaunchedEffect
+    LaunchedEffect(true) {
+        searchForPoliceStations(placesClient, latitude, longitude)
         .addOnSuccessListener { response ->
             response.autocompletePredictions.map { prediction ->
                 val placeId = prediction.placeId
@@ -491,12 +493,13 @@ fun BottomSheetContent(
                     }
             }
         }
-        .addOnFailureListener { exception ->
-            Log.e(
-                "POLICE STATIONS FAILED",
-                "Error searching for police stations: ${exception.message}"
-            )
-        }
+            .addOnFailureListener { exception ->
+                Log.e(
+                    "POLICE STATIONS FAILED",
+                    "Error searching for police stations: ${exception.message}"
+                )
+            }
+    }
     Column(
         modifier = Modifier.height(400.dp),
     ) {
@@ -521,6 +524,7 @@ fun BottomSheetContent(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .padding(horizontal = 20.dp)
+
                 .padding(top = 10.dp)
         )
         Text(
