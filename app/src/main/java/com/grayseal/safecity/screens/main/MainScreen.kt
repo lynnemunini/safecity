@@ -374,7 +374,7 @@ fun MapScreen(
     val uiSettings by remember { mutableStateOf(MapUiSettings(zoomControlsEnabled = true)) }
     val location = LatLng(latitude, longitude)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 16.5f)
+        position = CameraPosition.fromLatLngZoom(location, 15f)
     }
     val properties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
@@ -385,9 +385,7 @@ fun MapScreen(
         val markerOptions = MarkerOptions()
             .position(LatLng(area.Latitude, area.Longitude))
             .title("CRIME HOTSPOT")
-            .snippet(
-                area.Category.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-            )
+            .snippet(area.FrequentCrime)
         markers += markerOptions
     }
     Map(
@@ -464,35 +462,35 @@ fun BottomSheetContent(
     // Call searchForPoliceStations only once using LaunchedEffect
     LaunchedEffect(true) {
         searchForPoliceStations(placesClient, latitude, longitude)
-        .addOnSuccessListener { response ->
-            response.autocompletePredictions.map { prediction ->
-                val placeId = prediction.placeId
-                val placeFields = listOf(Place.Field.LAT_LNG)
-                val request = FetchPlaceRequest.builder(placeId, placeFields).build()
-                placesClient.fetchPlace(request)
-                    .addOnSuccessListener { response ->
-                        val place = response.place
-                        val latLng = place.latLng
-                        val markerOptions = MarkerOptions()
-                            .position(LatLng(latLng!!.latitude, latLng.longitude))
-                            .title(prediction.getPrimaryText(null).toString())
-                            .snippet(prediction.getSecondaryText(null).toString())
-                        val distance = calculateDistance(
-                            LatLng(latitude, longitude),
-                            LatLng(place.latLng!!.latitude, place.latLng!!.longitude)
-                        )
-                        val station = PoliceStation(markerOptions, prediction, place, distance)
-                        policeStations += station
-                        policeStations = policeStations.sortedBy { it.distance }
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e(
-                            "RETRIEVING PLACES FAILED",
-                            "Error fetching place details: ${exception.message}"
-                        )
-                    }
+            .addOnSuccessListener { response ->
+                response.autocompletePredictions.map { prediction ->
+                    val placeId = prediction.placeId
+                    val placeFields = listOf(Place.Field.LAT_LNG)
+                    val request = FetchPlaceRequest.builder(placeId, placeFields).build()
+                    placesClient.fetchPlace(request)
+                        .addOnSuccessListener { response ->
+                            val place = response.place
+                            val latLng = place.latLng
+                            val markerOptions = MarkerOptions()
+                                .position(LatLng(latLng!!.latitude, latLng.longitude))
+                                .title(prediction.getPrimaryText(null).toString())
+                                .snippet(prediction.getSecondaryText(null).toString())
+                            val distance = calculateDistance(
+                                LatLng(latitude, longitude),
+                                LatLng(place.latLng!!.latitude, place.latLng!!.longitude)
+                            )
+                            val station = PoliceStation(markerOptions, prediction, place, distance)
+                            policeStations += station
+                            policeStations = policeStations.sortedBy { it.distance }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e(
+                                "RETRIEVING PLACES FAILED",
+                                "Error fetching place details: ${exception.message}"
+                            )
+                        }
+                }
             }
-        }
             .addOnFailureListener { exception ->
                 Log.e(
                     "POLICE STATIONS FAILED",

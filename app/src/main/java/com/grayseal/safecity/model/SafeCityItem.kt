@@ -1,10 +1,15 @@
 package com.grayseal.safecity.model
 
 data class SafeCityItem(
-    val Category: String,
-    val Count: Int,
+    val Categories: Categories,
+    val Days: Days,
+    val FrequentCrime: String,
     val Latitude: Double,
-    val Location: String,
+    val CrimeLikelihood: String,
     val Longitude: Double,
-    val Reports: Int
+    val Months: Months,
+    val NotoriousDay: String,
+    val NotoriousMonth: String,
+    val Reports: Double,
+    val LocationName: String
 )
