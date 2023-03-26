@@ -83,7 +83,7 @@ fun StatisticsScreenElements(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 10.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -111,7 +111,7 @@ fun StatisticsScreenElements(
                     color = Color.White
                 )
                 Text(
-                    text = "Explore visualized crime statistics for areas within a 1 km radius of your location.",
+                    text = "Explore visualized crime statistics for areas within a 2 km radius of your location.",
                     fontFamily = poppinsFamily,
                     fontSize = 13.sp,
                     color = Color.White
@@ -178,7 +178,7 @@ fun Hotspots(
                                 Icon(
                                     painter = painterResource(id = R.drawable.building),
                                     contentDescription = "Building",
-                                    tint = Color(0xFF1e7048),
+                                    tint = Color(0xFF1b6541),
                                     modifier = Modifier.padding(8.dp)
                                 )
                             }
@@ -193,7 +193,7 @@ fun Hotspots(
                             Icon(
                                 painter = painterResource(id = R.drawable.note),
                                 contentDescription = "Report",
-                                tint = Color(0xFF1e7048),
+                                tint = Color(0xFF1b6541),
                                 modifier = Modifier.padding(8.dp)
                             )
                             Text("Reports: " + item.Reports.toInt().toString())

@@ -1,23 +1,32 @@
 package com.grayseal.safecity.screens.statistics
 
 import android.graphics.Typeface
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.grayseal.safecity.R
 import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.screens.main.StoreHotspotAreas
 import com.grayseal.safecity.ui.theme.Green
-import com.grayseal.safecity.ui.theme.Pink
+import com.grayseal.safecity.ui.theme.LightGreen
+import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -42,6 +51,8 @@ import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.dimensions.MutableDimensions
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 
 @Composable
@@ -76,12 +87,15 @@ fun ChartsScreen(navController: NavController, id: String) {
     val startAxisTitleMargins = dimensionsOf(end = axisTitleMarginValue)
     val bottomAxisTitleMargins = dimensionsOf(top = axisTitleMarginValue)
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    val monthsOfYear = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val monthsOfYear =
+        listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
     val categoriesOfCrime = listOf("Assault", "Burglary", "Fraud", "Theft", "Vandalism")
     val daysBottomAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> daysOfWeek[x.toInt() % daysOfWeek.size] }
-    val monthsBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> monthsOfYear[x.toInt() % monthsOfYear.size] }
-    val categoriesBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> categoriesOfCrime[x.toInt() % categoriesOfCrime.size] }
+    val monthsBottomAxisValueFormatter =
+        AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> monthsOfYear[x.toInt() % monthsOfYear.size] }
+    val categoriesBottomAxisValueFormatter =
+        AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> categoriesOfCrime[x.toInt() % categoriesOfCrime.size] }
 
     if (data != null) {
         val days = entryModelOf(
@@ -116,116 +130,292 @@ fun ChartsScreen(navController: NavController, id: String) {
             data.Categories.theft,
             data.Categories.vandalism
         )
+        Charts(
+            navController = navController,
+            data = data,
+            chartColors = chartColors,
+            axisValueOverrider = axisValueOverrider,
+            axisTitlePadding = axisTitlePadding,
+            startAxisTitleMargins = startAxisTitleMargins,
+            bottomAxisTitleMargins = bottomAxisTitleMargins,
+            daysBottomAxisValueFormatter = daysBottomAxisValueFormatter,
+            monthsBottomAxisValueFormatter = monthsBottomAxisValueFormatter,
+            categoriesBottomAxisValueFormatter = categoriesBottomAxisValueFormatter,
+            days = days,
+            months = months,
+            categories = categories
+        )
+    }
+}
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
-        ) {
-            // DAYS CHART
-            rememberChartStyle(columnChartColors = chartColors, lineChartColors = listOf(Pink))
-            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
-                Chart(
-                    chart = lineChart(
-                        axisValuesOverrider = axisValueOverrider
-                    ),
-                    model = days,
-                    modifier = Modifier,
-                    startAxis = startAxis(
-                        guideline = null,
-                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
-                        titleComponent = textComponent(
-                            color = Color.White,
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            padding = axisTitlePadding,
-                            margins = startAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Reports",
-                    ),
-                    bottomAxis = bottomAxis(
-                        titleComponent = textComponent(
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            color = Color.White,
-                            padding = axisTitlePadding,
-                            margins = bottomAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Days",
-                        valueFormatter = daysBottomAxisValueFormatter,
-                    ),
-                    fadingEdges = rememberFadingEdges(),
+@Composable
+fun Charts(
+    navController: NavController,
+    data: SafeCityItem,
+    chartColors: List<Color>,
+    axisValueOverrider: AxisValuesOverrider<ChartEntryModel>,
+    axisTitlePadding: MutableDimensions,
+    startAxisTitleMargins: MutableDimensions,
+    bottomAxisTitleMargins: MutableDimensions,
+    daysBottomAxisValueFormatter: AxisValueFormatter<AxisPosition.Horizontal.Bottom>,
+    monthsBottomAxisValueFormatter: AxisValueFormatter<AxisPosition.Horizontal.Bottom>,
+    categoriesBottomAxisValueFormatter: AxisValueFormatter<AxisPosition.Horizontal.Bottom>,
+    days: ChartEntryModel,
+    months: ChartEntryModel,
+    categories: ChartEntryModel
+) {
+    Surface(modifier = Modifier.fillMaxSize(), color = LightGreen) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = "Back",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable(onClick = {
+                            navController.popBackStack()
+                        })
                 )
             }
-
-            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
-                Chart(
-                    chart = columnChart(
-                        mergeMode = ColumnChart.MergeMode.Grouped,
-                        targetVerticalAxisPosition = AxisPosition.Vertical.Start,
-                        axisValuesOverrider = axisValueOverrider
-                    ),
-                    model = months,
-                    modifier = Modifier,
-                    startAxis = startAxis(
-                        guideline = null,
-                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
-                        titleComponent = textComponent(
-                            color = Color.White,
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            padding = axisTitlePadding,
-                            margins = startAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Reports",
-                    ),
-                    bottomAxis = bottomAxis(
-                        titleComponent = textComponent(
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            color = Color.White,
-                            padding = axisTitlePadding,
-                            margins = bottomAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Months",
-                        valueFormatter = monthsBottomAxisValueFormatter,
-                    ),
-                    fadingEdges = rememberFadingEdges(),
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Charts", fontFamily = poppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = data.LocationName,
+                        fontFamily = poppinsFamily,
+                        fontSize = 12.sp,
+                        color = Color.DarkGray
+                    )
+                }
             }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // DAYS CHART
+                    rememberChartStyle(
+                        columnChartColors = chartColors,
+                        lineChartColors = listOf(White)
+                    )
+                    ProvideChartStyle(rememberChartStyle(chartColors, listOf(White))) {
+                        Surface(
+                            shape = RoundedCornerShape(30.dp),
+                            color = Green,
+                            border = BorderStroke(width = 10.dp, color = White),
+                            elevation = 4.dp
+                        ) {
+                            Column {
+                                Chart(
+                                    chart = lineChart(
+                                        axisValuesOverrider = axisValueOverrider
+                                    ),
+                                    model = days,
+                                    modifier = Modifier.padding(
+                                        horizontal = 20.dp,
+                                        vertical = 10.dp
+                                    ),
+                                    startAxis = startAxis(
+                                        guideline = null,
+                                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+                                        titleComponent = textComponent(
+                                            color = White,
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            padding = axisTitlePadding,
+                                            margins = startAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Reports",
+                                    ),
+                                    bottomAxis = bottomAxis(
+                                        titleComponent = textComponent(
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            color = White,
+                                            padding = axisTitlePadding,
+                                            margins = bottomAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Days",
+                                        valueFormatter = daysBottomAxisValueFormatter,
+                                    ),
+                                    fadingEdges = rememberFadingEdges(),
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 30.dp, bottom = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = com.grayseal.safecity.R.drawable.circle),
+                                        contentDescription = "Bullet",
+                                        tint = White,
+                                        modifier = Modifier.size(5.dp)
+                                    )
+                                    Text(
+                                        "Notorious Day -> " + data.NotoriousDay,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = White
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
-                Chart(
-                    chart = lineChart(
-                        axisValuesOverrider = axisValueOverrider
-                    ),
-                    model = categories,
-                    modifier = Modifier,
-                    startAxis = startAxis(
-                        guideline = null,
-                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
-                        titleComponent = textComponent(
-                            color = Color.White,
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            padding = axisTitlePadding,
-                            margins = startAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Reports",
-                    ),
-                    bottomAxis = bottomAxis(
-                        titleComponent = textComponent(
-                            background = shapeComponent(Shapes.pillShape, Green),
-                            color = Color.White,
-                            padding = axisTitlePadding,
-                            margins = bottomAxisTitleMargins,
-                            typeface = Typeface.MONOSPACE,
-                        ),
-                        title = "Categories",
-                        valueFormatter = categoriesBottomAxisValueFormatter,
-                    ),
-                    fadingEdges = rememberFadingEdges(),
-                )
+                    // MONTHS CHART
+                    ProvideChartStyle(rememberChartStyle(chartColors, listOf(Green))) {
+                        Surface(
+                            shape = RoundedCornerShape(30.dp),
+                            color = White,
+                            elevation = 4.dp
+                        ) {
+                            Column {
+                                Chart(
+                                    chart = columnChart(
+                                        mergeMode = ColumnChart.MergeMode.Grouped,
+                                        targetVerticalAxisPosition = AxisPosition.Vertical.Start,
+                                        axisValuesOverrider = axisValueOverrider
+                                    ),
+                                    model = months,
+                                    modifier = Modifier.padding(
+                                        horizontal = 20.dp,
+                                        vertical = 10.dp
+                                    ),
+                                    startAxis = startAxis(
+                                        guideline = null,
+                                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+                                        titleComponent = textComponent(
+                                            color = White,
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            padding = axisTitlePadding,
+                                            margins = startAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Reports",
+                                    ),
+                                    bottomAxis = bottomAxis(
+                                        titleComponent = textComponent(
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            color = White,
+                                            padding = axisTitlePadding,
+                                            margins = bottomAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Months",
+                                        valueFormatter = monthsBottomAxisValueFormatter,
+                                    ),
+                                    fadingEdges = rememberFadingEdges(),
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 30.dp, bottom = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = com.grayseal.safecity.R.drawable.circle),
+                                        contentDescription = "Bullet",
+                                        tint = Green,
+                                        modifier = Modifier.size(5.dp)
+                                    )
+                                    Text(
+                                        "Notorious Month -> " + data.NotoriousMonth,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Green
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // CATEGORIES CHART
+                    ProvideChartStyle(rememberChartStyle(chartColors, listOf(White))) {
+                        Surface(
+                            shape = RoundedCornerShape(30.dp),
+                            color = Green,
+                            border = BorderStroke(width = 10.dp, color = White),
+                            elevation = 4.dp
+                        ) {
+                            Column {
+                                Chart(
+                                    chart = lineChart(
+                                        axisValuesOverrider = axisValueOverrider
+                                    ),
+                                    model = categories,
+                                    modifier = Modifier.padding(
+                                        vertical = 10.dp,
+                                        horizontal = 20.dp
+                                    ),
+                                    startAxis = startAxis(
+                                        guideline = null,
+                                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+                                        titleComponent = textComponent(
+                                            color = White,
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            padding = axisTitlePadding,
+                                            margins = startAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Reports",
+                                    ),
+                                    bottomAxis = bottomAxis(
+                                        titleComponent = textComponent(
+                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            color = White,
+                                            padding = axisTitlePadding,
+                                            margins = bottomAxisTitleMargins,
+                                            typeface = Typeface.MONOSPACE,
+                                        ),
+                                        title = "Categories",
+                                        valueFormatter = categoriesBottomAxisValueFormatter,
+                                    ),
+                                    fadingEdges = rememberFadingEdges(),
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 30.dp, bottom = 20.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.circle),
+                                        contentDescription = "Bullet",
+                                        tint = White,
+                                        modifier = Modifier.size(5.dp)
+                                    )
+                                    Text(
+                                        "Frequent Crime -> " + data.FrequentCrime,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
