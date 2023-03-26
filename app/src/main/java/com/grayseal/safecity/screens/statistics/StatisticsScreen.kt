@@ -4,17 +4,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -48,13 +54,15 @@ fun StatisticsScreen(navController: NavController) {
             loading = false
         }
     }
-    StatisticsScreenElements(
-        navController = navController,
-        nearbyHotspots = nearbyHotspots,
-        loading = loading,
-        latitude = coordinates.first,
-        longitude = coordinates.second
-    )
+    Surface(color = Green) {
+        StatisticsScreenElements(
+            navController = navController,
+            nearbyHotspots = nearbyHotspots,
+            loading = loading,
+            latitude = coordinates.first,
+            longitude = coordinates.second
+        )
+    }
 }
 
 @Composable
@@ -88,7 +96,11 @@ fun StatisticsScreenElements(
                     })
             )
         }
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
+        ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Crime Statistics", fontFamily = poppinsFamily,
@@ -96,9 +108,10 @@ fun StatisticsScreenElements(
                     fontSize = 22.sp
                 )
                 Text(
-                    text = "Explore visualized crime statistics for areas within a 3 km radius of your location.",
+                    text = "Explore visualized crime statistics for areas within a 1 km radius of your location.",
                     fontFamily = poppinsFamily,
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    color = Color.DarkGray
                 )
             }
         }
@@ -108,7 +121,7 @@ fun StatisticsScreenElements(
             horizontalArrangement = Arrangement.Center
         ) {
             if (loading) {
-                LinearProgressIndicator(color = Green)
+                LinearProgressIndicator(color = Color.White)
             } else {
                 Hotspots(
                     navController = navController,
@@ -131,7 +144,7 @@ fun Hotspots(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 10.dp),
+            .padding(vertical = 15.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         items(items = nearbyHotspots) { item: SafeCityItem ->
@@ -139,14 +152,71 @@ fun Hotspots(
                 LatLng(latitude, longitude),
                 LatLng(item.Latitude, item.Longitude)
             )
-            Surface(modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column() {
-                        Text(item.LocationName)
-                        Text(
-                            (distance / 1000.0).toInt()
-                                .toString() + " km away"
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(25.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.size(50.dp),
+                        color = Color.LightGray.copy(alpha = 0.3f),
+                        shape = CircleShape,
+                        elevation = 4.dp
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.building),
+                            contentDescription = "Building",
+                            tint = Color.DarkGray,
+                            modifier = Modifier.padding(8.dp)
                         )
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                        Text(item.LocationName, fontWeight = FontWeight.Medium)
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(
+                                    String.format("%.2f", (distance / 1000.0)) + " km away",
+                                    fontWeight = FontWeight.ExtraLight
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.Bottom
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.End)
+                                        .clickable(onClick = {}),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        "View Statistics",
+                                        fontFamily = poppinsFamily,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        color = Green,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    androidx.compose.material.Icon(
+                                        Icons.Rounded.ArrowForward,
+                                        contentDescription = "Arrow",
+                                        tint = Green,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                }
+                            }
+                        }
+
                     }
                 }
             }
