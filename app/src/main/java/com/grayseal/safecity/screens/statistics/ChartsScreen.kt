@@ -79,9 +79,11 @@ fun ChartsScreen(navController: NavController, id: String) {
     val bottomAxisTitleMargins = dimensionsOf(top = axisTitleMarginValue)
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val monthsOfYear = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val categories = listOf("Assault", "Burglary", "Fraud", "Theft", "Vandalism")
     val daysBottomAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> daysOfWeek[x.toInt() % daysOfWeek.size] }
     val monthsBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> monthsOfYear[x.toInt() % monthsOfYear.size] }
+    val categoriesBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> categories[x.toInt() % categories.size] }
 
     if (data != null) {
         val days = entryModelOf(
@@ -107,6 +109,14 @@ fun ChartsScreen(navController: NavController, id: String) {
             data.Months.October,
             data.Months.November,
             data.Months.December
+        )
+
+        val categories = entryModelOf(
+            data.Categories.assault,
+            data.Categories.burglary,
+            data.Categories.fraud,
+            data.Categories.theft,
+            data.Categories.vandalism
         )
 
         Column(
@@ -144,7 +154,6 @@ fun ChartsScreen(navController: NavController, id: String) {
                             typeface = Typeface.MONOSPACE,
                         ),
                         title = "Days",
-                        labelRotationDegrees = 0.2f,
                         valueFormatter = daysBottomAxisValueFormatter,
                     ),
                     fadingEdges = rememberFadingEdges(),
@@ -181,8 +190,41 @@ fun ChartsScreen(navController: NavController, id: String) {
                             typeface = Typeface.MONOSPACE,
                         ),
                         title = "Months",
-                        labelRotationDegrees = 0.9f,
                         valueFormatter = monthsBottomAxisValueFormatter,
+                    ),
+                    fadingEdges = rememberFadingEdges(),
+                )
+            }
+
+            ProvideChartStyle(rememberChartStyle(chartColors, chartColors)) {
+                Chart(
+                    chart = lineChart(
+                        axisValuesOverrider = axisValueOverrider
+                    ),
+                    model = days,
+                    modifier = Modifier,
+                    startAxis = startAxis(
+                        guideline = null,
+                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+                        titleComponent = textComponent(
+                            color = Color.White,
+                            background = shapeComponent(Shapes.pillShape, Green),
+                            padding = axisTitlePadding,
+                            margins = startAxisTitleMargins,
+                            typeface = Typeface.MONOSPACE,
+                        ),
+                        title = "Reports",
+                    ),
+                    bottomAxis = bottomAxis(
+                        titleComponent = textComponent(
+                            background = shapeComponent(Shapes.pillShape, Green),
+                            color = Color.White,
+                            padding = axisTitlePadding,
+                            margins = bottomAxisTitleMargins,
+                            typeface = Typeface.MONOSPACE,
+                        ),
+                        title = "Categories",
+                        valueFormatter = categoriesBottomAxisValueFormatter,
                     ),
                     fadingEdges = rememberFadingEdges(),
                 )
