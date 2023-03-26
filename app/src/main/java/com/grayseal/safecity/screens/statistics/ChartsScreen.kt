@@ -4,7 +4,6 @@ import android.graphics.Typeface
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,6 +17,7 @@ import androidx.navigation.NavController
 import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.screens.main.StoreHotspotAreas
 import com.grayseal.safecity.ui.theme.Green
+import com.grayseal.safecity.ui.theme.Pink
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -42,8 +42,6 @@ import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
-import com.patrykandpatrick.vico.core.entry.ChartEntry
-import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 
 @Composable
@@ -64,10 +62,10 @@ fun ChartsScreen(navController: NavController, id: String) {
 
     val data = nearbyHotspots.find { it.Id == id }
     val chartColors = listOf(Green, Yellow)
-    val AXIS_VALUE_OVERRIDER_Y_FRACTION = 1.2f
+    val yFraction = 1.2f
     val axisValueOverrider =
         AxisValuesOverrider.adaptiveYValues(
-            yFraction = AXIS_VALUE_OVERRIDER_Y_FRACTION,
+            yFraction = yFraction,
             round = true
         )
     val axisTitleHorizontalPaddingValue = 8.dp
@@ -79,11 +77,11 @@ fun ChartsScreen(navController: NavController, id: String) {
     val bottomAxisTitleMargins = dimensionsOf(top = axisTitleMarginValue)
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     val monthsOfYear = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    val categories = listOf("Assault", "Burglary", "Fraud", "Theft", "Vandalism")
+    val categoriesOfCrime = listOf("Assault", "Burglary", "Fraud", "Theft", "Vandalism")
     val daysBottomAxisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> daysOfWeek[x.toInt() % daysOfWeek.size] }
     val monthsBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> monthsOfYear[x.toInt() % monthsOfYear.size] }
-    val categoriesBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> categories[x.toInt() % categories.size] }
+    val categoriesBottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> categoriesOfCrime[x.toInt() % categoriesOfCrime.size] }
 
     if (data != null) {
         val days = entryModelOf(
@@ -125,8 +123,8 @@ fun ChartsScreen(navController: NavController, id: String) {
                 .padding(20.dp)
         ) {
             // DAYS CHART
-            rememberChartStyle(columnChartColors = chartColors, lineChartColors = chartColors)
-            ProvideChartStyle(rememberChartStyle(chartColors, chartColors)) {
+            rememberChartStyle(columnChartColors = chartColors, lineChartColors = listOf(Pink))
+            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
                 Chart(
                     chart = lineChart(
                         axisValuesOverrider = axisValueOverrider
@@ -160,7 +158,7 @@ fun ChartsScreen(navController: NavController, id: String) {
                 )
             }
 
-            ProvideChartStyle(rememberChartStyle(chartColors, chartColors)) {
+            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
                 Chart(
                     chart = columnChart(
                         mergeMode = ColumnChart.MergeMode.Grouped,
@@ -196,12 +194,12 @@ fun ChartsScreen(navController: NavController, id: String) {
                 )
             }
 
-            ProvideChartStyle(rememberChartStyle(chartColors, chartColors)) {
+            ProvideChartStyle(rememberChartStyle(chartColors, listOf(Pink))) {
                 Chart(
                     chart = lineChart(
                         axisValuesOverrider = axisValueOverrider
                     ),
-                    model = days,
+                    model = categories,
                     modifier = Modifier,
                     startAxis = startAxis(
                         guideline = null,

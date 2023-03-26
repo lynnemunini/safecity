@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,7 +90,7 @@ fun StatisticsScreenElements(
             Icon(
                 painter = painterResource(id = R.drawable.ic_close),
                 contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                tint = Color.White,
                 modifier = Modifier
                     .size(32.dp)
                     .clickable(onClick = {
@@ -106,13 +107,14 @@ fun StatisticsScreenElements(
                 Text(
                     text = "Crime Statistics", fontFamily = poppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
+                    fontSize = 22.sp,
+                    color = Color.White
                 )
                 Text(
                     text = "Explore visualized crime statistics for areas within a 1 km radius of your location.",
                     fontFamily = poppinsFamily,
                     fontSize = 13.sp,
-                    color = Color.DarkGray
+                    color = Color.White
                 )
             }
         }
@@ -161,20 +163,55 @@ fun Hotspots(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Surface(
-                        modifier = Modifier.size(50.dp),
-                        color = Color.LightGray.copy(alpha = 0.3f),
-                        shape = CircleShape,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.building),
-                            contentDescription = "Building",
-                            tint = Color.DarkGray,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                        Text(item.LocationName, fontWeight = FontWeight.Medium)
+                    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Surface(
+                                modifier = Modifier.size(50.dp),
+                                color = Color.LightGray.copy(alpha = 0.3f),
+                                shape = CircleShape,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.building),
+                                    contentDescription = "Building",
+                                    tint = Color(0xFF1e7048),
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                            }
+                            Text(item.LocationName, fontWeight = FontWeight.SemiBold)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.note),
+                                contentDescription = "Report",
+                                tint = Color(0xFF1e7048),
+                                modifier = Modifier.padding(8.dp)
+                            )
+                            Text("Reports: " + item.Reports.toInt().toString())
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.crime),
+                                contentDescription = "Crime",
+                                tint = Color.Red,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                            Text("Frequent Crime: " + item.FrequentCrime.capitalize())
+                        }
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(
                                 modifier = Modifier.weight(1f),
