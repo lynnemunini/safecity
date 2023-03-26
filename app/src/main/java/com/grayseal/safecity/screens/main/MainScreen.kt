@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerState
@@ -268,9 +267,9 @@ fun SafeCityScaffold(
                 scrimColor = Color.Black.copy(alpha = 0.5f),
                 drawerContent = {
                     ModalDrawerSheet(
-                        modifier = Modifier.width(290.dp),
+                        modifier = Modifier.width(270.dp),
                         drawerShape = RectangleShape,
-                        drawerContainerColor = MaterialTheme.colorScheme.background,
+                        drawerContainerColor = Green,
                         drawerTonalElevation = 0.dp,
                     ) {
                         Spacer(Modifier.height(30.dp))
@@ -285,7 +284,7 @@ fun SafeCityScaffold(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 20.dp),
+                                .padding(horizontal = 10.dp, vertical = 20.dp),
                             horizontalAlignment = Alignment.Start
                         ) {
                             Row(modifier = Modifier.fillMaxWidth()) {
@@ -308,9 +307,7 @@ fun SafeCityScaffold(
                                             Icon(
                                                 painter = painterResource(id = it.icon),
                                                 contentDescription = it.name,
-                                                tint = MaterialTheme.colorScheme.onBackground.copy(
-                                                    alpha = 0.4f
-                                                ),
+                                                tint = Color.White,
                                                 modifier = Modifier
                                                     .size(35.dp)
                                                     .padding(end = 10.dp)
@@ -320,9 +317,7 @@ fun SafeCityScaffold(
                                                 fontSize = 15.sp,
                                                 fontFamily = poppinsFamily,
                                                 fontWeight = FontWeight.Medium,
-                                                color = MaterialTheme.colorScheme.onBackground.copy(
-                                                    alpha = 0.8f
-                                                ),
+                                                color = Color.White,
                                                 modifier = Modifier.align(Alignment.CenterVertically)
                                             )
                                         }

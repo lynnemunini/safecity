@@ -152,7 +152,7 @@ fun Hotspots(
                 LatLng(latitude, longitude),
                 LatLng(item.Latitude, item.Longitude)
             )
-            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(25.dp)) {
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(25.dp), elevation = 4.dp) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -164,7 +164,6 @@ fun Hotspots(
                         modifier = Modifier.size(50.dp),
                         color = Color.LightGray.copy(alpha = 0.3f),
                         shape = CircleShape,
-                        elevation = 4.dp
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.building),
@@ -182,7 +181,8 @@ fun Hotspots(
                             ) {
                                 Text(
                                     String.format("%.2f", (distance / 1000.0)) + " km away",
-                                    fontWeight = FontWeight.ExtraLight
+                                    color = Color.DarkGray.copy(alpha = 0.7f),
+                                    fontSize = 12.sp
                                 )
                             }
                             Column(
@@ -216,7 +216,6 @@ fun Hotspots(
                                 }
                             }
                         }
-
                     }
                 }
             }
