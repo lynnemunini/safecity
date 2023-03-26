@@ -6,6 +6,9 @@ plugins {
     // To enable using hilt for dependency injection
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    // JSON serialization
+    id "kotlinx-serialization"
+
 }
 
 android {
@@ -52,7 +55,6 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.0'
     implementation 'androidx.activity:activity-compose:1.6.1'
@@ -95,6 +97,10 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     // OkHttp
     implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.2"
+    // Preferences Datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    // JSON serialization
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 
 }
 

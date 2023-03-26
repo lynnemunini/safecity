@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -135,8 +136,9 @@ fun GetCurrentLocation(navController: NavController) {
     var loading by remember {
         mutableStateOf(true)
     }
-    val maxDistance = 5000 // Maximum distance in meters
+    val maxDistance = 2000 // Maximum distance in meters
     val scope = rememberCoroutineScope()
+    val storeHotspotAreas = StoreHotspotAreas(context)
 
     LaunchedEffect(hotspotAreas) {
         scope.launch {
@@ -146,13 +148,13 @@ fun GetCurrentLocation(navController: NavController) {
                 } catch (e: Exception) {
                     null
                 }
+            if (nearbyHotspots != null) {
+                loading = false
+                storeHotspotAreas.storeNearbyHotspots(nearbyHotspots!!)
+            }
         }
     }
 
-    if (nearbyHotspots != null) {
-        loading = false
-        Log.d("NEARBY", "$nearbyHotspots")
-    }
 
     com.grayseal.safecity.location.HandleRequest(
         permissionState = permissionState,
@@ -293,7 +295,10 @@ fun SafeCityScaffold(
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 20.dp),
+                                                .padding(horizontal = 20.dp)
+                                                .clickable(onClick = {
+                                                    navController.navigate(it.route)
+                                                }),
                                             horizontalArrangement = Arrangement.Start,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
@@ -385,7 +390,7 @@ fun MapScreen(
         val markerOptions = MarkerOptions()
             .position(LatLng(area.Latitude, area.Longitude))
             .title("CRIME HOTSPOT")
-            .snippet(area.FrequentCrime)
+            .snippet(area.FrequentCrime.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
         markers += markerOptions
     }
     Map(
@@ -578,7 +583,8 @@ fun BottomSheetContent(
                                                 fontWeight = FontWeight.Medium,
                                                 overflow = TextOverflow.Clip,
                                                 fontFamily = poppinsFamily,
-                                                color = MaterialTheme.colorScheme.onBackground
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                                modifier = Modifier.width(150.dp)
                                             )
                                             Surface(
                                                 shape = RoundedCornerShape(30.dp),

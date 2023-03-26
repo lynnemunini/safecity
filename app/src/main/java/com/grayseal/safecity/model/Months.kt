@@ -1,5 +1,8 @@
 package com.grayseal.safecity.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Months(
     val April: Int,
     val August: Int,

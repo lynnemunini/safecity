@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.grayseal.safecity.screens.main.MainScreen
 import com.grayseal.safecity.screens.report.ReportScreen
+import com.grayseal.safecity.screens.statistics.StatisticsScreen
 
 @Composable
 fun SafeCityNavigation() {
@@ -27,6 +28,9 @@ fun SafeCityNavigation() {
             )
         ) { entry ->
             ReportScreen(navController = navController, name = entry.arguments?.getString("name"))
+        }
+        composable(route = Screen.StatisticsScreen.route) {
+            StatisticsScreen(navController = navController)
         }
 
     }
