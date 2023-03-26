@@ -27,6 +27,7 @@ import androidx.navigation.NavController
 import com.google.android.gms.maps.model.LatLng
 import com.grayseal.safecity.R
 import com.grayseal.safecity.model.SafeCityItem
+import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.screens.main.StoreCoordinates
 import com.grayseal.safecity.screens.main.StoreHotspotAreas
 import com.grayseal.safecity.ui.theme.Green
@@ -194,7 +195,7 @@ fun Hotspots(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .align(Alignment.End)
-                                        .clickable(onClick = {}),
+                                        .clickable(onClick = {navController.navigate(route = Screen.ChartsScreen.withArgs(item.Id))}),
                                     horizontalArrangement = Arrangement.End,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {

@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SafeCityItem(
+    val Id: String,
     val Categories: Categories,
     val Days: Days,
     val FrequentCrime: String,

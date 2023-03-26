@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.grayseal.safecity.screens.main.MainScreen
 import com.grayseal.safecity.screens.report.ReportScreen
+import com.grayseal.safecity.screens.statistics.ChartsScreen
 import com.grayseal.safecity.screens.statistics.StatisticsScreen
 
 @Composable
@@ -20,7 +21,7 @@ fun SafeCityNavigation() {
         composable(
             route = Screen.ReportScreen.route + "/{name}",
             arguments = listOf(
-                navArgument("name"){
+                navArgument("name") {
                     type = NavType.StringType
                     defaultValue = ""
                     nullable = true
@@ -32,6 +33,15 @@ fun SafeCityNavigation() {
         composable(route = Screen.StatisticsScreen.route) {
             StatisticsScreen(navController = navController)
         }
-
+        composable(
+            route = Screen.ChartsScreen.route + "/{id}",
+            arguments = listOf(navArgument(name = "id") {
+                type = NavType.StringType
+            })
+        ) { navBack ->
+            navBack.arguments?.getString("id").let { id ->
+                ChartsScreen(navController = navController, id = id!!)
+            }
+        }
     }
 }

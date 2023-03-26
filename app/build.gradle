@@ -102,6 +102,9 @@ dependencies {
     // JSON serialization
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 
+    // Charts and Graphs
+    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
+
 }
 
 // Allow references to generated code
