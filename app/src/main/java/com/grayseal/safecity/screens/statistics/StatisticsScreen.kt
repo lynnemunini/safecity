@@ -18,24 +18,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.android.gms.maps.model.LatLng
 import com.grayseal.safecity.R
 import com.grayseal.safecity.model.SafeCityItem
+import com.grayseal.safecity.screens.main.StoreCoordinates
 import com.grayseal.safecity.screens.main.StoreHotspotAreas
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
+import com.grayseal.safecity.utils.calculateDistance
 
 @Composable
 fun StatisticsScreen(navController: NavController) {
     val context = LocalContext.current
     // Retrieve nearbyHotspots
     val storeHotspotAreas = StoreHotspotAreas(context)
+    val storeCoordinates = StoreCoordinates(context)
     var nearbyHotspots by remember { mutableStateOf(emptyList<SafeCityItem>()) }
     var loading by remember {
         mutableStateOf(true)
     }
+    var coordinates by remember {
+        mutableStateOf(Pair(0.0, 0.0))
+    }
     LaunchedEffect(Unit) {
         val hotspots = storeHotspotAreas.retrieveNearbyHotspots()
         if (hotspots != null) {
+            coordinates = storeCoordinates.retrieveCoordinates() ?: Pair(0.0, 0.0)
             nearbyHotspots = hotspots
             loading = false
         }
@@ -43,7 +51,9 @@ fun StatisticsScreen(navController: NavController) {
     StatisticsScreenElements(
         navController = navController,
         nearbyHotspots = nearbyHotspots,
-        loading = loading
+        loading = loading,
+        latitude = coordinates.first,
+        longitude = coordinates.second
     )
 }
 
@@ -51,7 +61,9 @@ fun StatisticsScreen(navController: NavController) {
 fun StatisticsScreenElements(
     navController: NavController,
     nearbyHotspots: List<SafeCityItem>,
-    loading: Boolean
+    loading: Boolean,
+    latitude: Double,
+    longitude: Double
 ) {
     Column(
         modifier = Modifier
@@ -98,21 +110,45 @@ fun StatisticsScreenElements(
             if (loading) {
                 LinearProgressIndicator(color = Green)
             } else {
-                Hotspots(navController = navController, nearbyHotspots = nearbyHotspots)
+                Hotspots(
+                    navController = navController,
+                    nearbyHotspots = nearbyHotspots,
+                    latitude,
+                    longitude
+                )
             }
         }
     }
 }
 
 @Composable
-fun Hotspots(navController: NavController, nearbyHotspots: List<SafeCityItem>) {
+fun Hotspots(
+    navController: NavController,
+    nearbyHotspots: List<SafeCityItem>,
+    latitude: Double,
+    longitude: Double
+) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         items(items = nearbyHotspots) { item: SafeCityItem ->
+            val distance = calculateDistance(
+                LatLng(latitude, longitude),
+                LatLng(item.Latitude, item.Longitude)
+            )
             Surface(modifier = Modifier.fillMaxWidth()) {
-                Text(item.LocationName)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column() {
+                        Text(item.LocationName)
+                        Text(
+                            (distance / 1000.0).toInt()
+                                .toString() + " km away"
+                        )
+                    }
+                }
             }
         }
     }

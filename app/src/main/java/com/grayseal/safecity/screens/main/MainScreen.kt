@@ -139,6 +139,7 @@ fun GetCurrentLocation(navController: NavController) {
     val maxDistance = 2000 // Maximum distance in meters
     val scope = rememberCoroutineScope()
     val storeHotspotAreas = StoreHotspotAreas(context)
+    val storeCoordinates = StoreCoordinates(context)
 
     LaunchedEffect(hotspotAreas) {
         scope.launch {
@@ -151,6 +152,7 @@ fun GetCurrentLocation(navController: NavController) {
             if (nearbyHotspots != null) {
                 loading = false
                 storeHotspotAreas.storeNearbyHotspots(nearbyHotspots!!)
+                storeCoordinates.storeCoordinates(latitude, longitude)
             }
         }
     }
