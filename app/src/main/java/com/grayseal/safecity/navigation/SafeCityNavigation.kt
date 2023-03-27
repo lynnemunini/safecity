@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.grayseal.safecity.screens.hotspots.HotspotsScreen
 import com.grayseal.safecity.screens.main.MainScreen
 import com.grayseal.safecity.screens.report.ReportScreen
 import com.grayseal.safecity.screens.statistics.ChartsScreen
@@ -42,6 +43,9 @@ fun SafeCityNavigation() {
             navBack.arguments?.getString("id").let { id ->
                 ChartsScreen(navController = navController, id = id!!)
             }
+        }
+        composable(route = Screen.HotspotsScreen.route) {
+            HotspotsScreen(navController = navController)
         }
     }
 }
