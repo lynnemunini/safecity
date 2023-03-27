@@ -12,14 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -155,7 +153,11 @@ fun Hotspots(
                 LatLng(latitude, longitude),
                 LatLng(item.Latitude, item.Longitude)
             )
-            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(25.dp), elevation = 4.dp) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(25.dp),
+                elevation = 4.dp
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -163,7 +165,7 @@ fun Hotspots(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Column {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth(),
@@ -178,7 +180,7 @@ fun Hotspots(
                                 Icon(
                                     painter = painterResource(id = R.drawable.building),
                                     contentDescription = "Building",
-                                    tint = Color(0xFF1b6541),
+                                    tint = Color(0xFF18775e),
                                     modifier = Modifier.padding(8.dp)
                                 )
                             }
@@ -193,7 +195,7 @@ fun Hotspots(
                             Icon(
                                 painter = painterResource(id = R.drawable.note),
                                 contentDescription = "Report",
-                                tint = Color(0xFF1b6541),
+                                tint = Color(0xFF18775e),
                                 modifier = Modifier.padding(8.dp)
                             )
                             Text("Reports: " + item.Reports.toInt().toString())
@@ -207,10 +209,24 @@ fun Hotspots(
                             Icon(
                                 painter = painterResource(id = R.drawable.crime),
                                 contentDescription = "Crime",
-                                tint = Color.Red,
+                                tint = Color(0xFFe73058),
                                 modifier = Modifier.padding(8.dp)
                             )
                             Text("Frequent Crime: " + item.FrequentCrime.capitalize())
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.prediction),
+                                contentDescription = "Prediction",
+                                tint = Color(0xFFf3a52d),
+                                modifier = Modifier.padding(8.dp)
+                            )
+                            Text("Crime Likelihood: " + item.CrimeLikelihood.capitalize())
                         }
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(
@@ -232,12 +248,18 @@ fun Hotspots(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .align(Alignment.End)
-                                        .clickable(onClick = {navController.navigate(route = Screen.ChartsScreen.withArgs(item.Id))}),
+                                        .clickable(onClick = {
+                                            navController.navigate(
+                                                route = Screen.ChartsScreen.withArgs(
+                                                    item.Id
+                                                )
+                                            )
+                                        }),
                                     horizontalArrangement = Arrangement.End,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        "View Statistics",
+                                        "Visualised Statistics",
                                         fontFamily = poppinsFamily,
                                         fontSize = 12.sp,
                                         maxLines = 1,

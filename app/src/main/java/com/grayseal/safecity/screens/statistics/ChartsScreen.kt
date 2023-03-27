@@ -193,7 +193,7 @@ fun Charts(
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Charts", fontFamily = poppinsFamily,
+                        text = "Charts & Graphs", fontFamily = poppinsFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 22.sp,
                         color = Color.Black
@@ -284,7 +284,7 @@ fun Charts(
                     }
 
                     // MONTHS CHART
-                    ProvideChartStyle(rememberChartStyle(chartColors, listOf(Green))) {
+                    ProvideChartStyle(rememberChartStyle(listOf(Color(0xFFf3a52d)), chartColors)) {
                         Surface(
                             shape = RoundedCornerShape(30.dp),
                             color = White,
@@ -307,7 +307,7 @@ fun Charts(
                                         horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
                                         titleComponent = textComponent(
                                             color = White,
-                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            background = shapeComponent(Shapes.pillShape, Color(0xFFf3a52d)),
                                             padding = axisTitlePadding,
                                             margins = startAxisTitleMargins,
                                             typeface = Typeface.MONOSPACE,
@@ -316,7 +316,7 @@ fun Charts(
                                     ),
                                     bottomAxis = bottomAxis(
                                         titleComponent = textComponent(
-                                            background = shapeComponent(Shapes.pillShape, Green),
+                                            background = shapeComponent(Shapes.pillShape, Color(0xFFf3a52d)),
                                             color = White,
                                             padding = axisTitlePadding,
                                             margins = bottomAxisTitleMargins,
@@ -337,13 +337,13 @@ fun Charts(
                                     Icon(
                                         painter = painterResource(id = com.grayseal.safecity.R.drawable.circle),
                                         contentDescription = "Bullet",
-                                        tint = Green,
+                                        tint = Color(0xFFf3a52d),
                                         modifier = Modifier.size(5.dp)
                                     )
                                     Text(
                                         "Notorious Month -> " + data.NotoriousMonth,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Green
+                                        color = Color(0xFFf3a52d)
                                     )
                                 }
                             }
@@ -351,12 +351,13 @@ fun Charts(
                     }
 
                     // CATEGORIES CHART
-                    ProvideChartStyle(rememberChartStyle(chartColors, listOf(White))) {
+                    ProvideChartStyle(rememberChartStyle(chartColors, chartColors)) {
                         Surface(
                             shape = RoundedCornerShape(30.dp),
-                            color = Green,
-                            border = BorderStroke(width = 10.dp, color = White),
-                            elevation = 4.dp
+                            color = White,
+                            border = BorderStroke(width = 10.dp, color = Green),
+                            elevation = 4.dp,
+                            modifier = Modifier.padding(bottom = 20.dp)
                         ) {
                             Column {
                                 Chart(
@@ -403,13 +404,13 @@ fun Charts(
                                     Icon(
                                         painter = painterResource(id = R.drawable.circle),
                                         contentDescription = "Bullet",
-                                        tint = White,
+                                        tint = Green,
                                         modifier = Modifier.size(5.dp)
                                     )
                                     Text(
                                         "Frequent Crime -> " + data.FrequentCrime,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = White
+                                        color = Green
                                     )
                                 }
                             }
