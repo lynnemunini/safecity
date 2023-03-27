@@ -26,7 +26,6 @@ import com.grayseal.safecity.R
 import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.screens.main.StoreCoordinates
 import com.grayseal.safecity.screens.main.StoreHotspotAreas
-import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.calculateDistance
 
@@ -154,11 +153,11 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                         Icon(
                             painter = painterResource(id = R.drawable.building),
                             contentDescription = "Building",
-                            tint = Green,
+                            tint = Color(0xFF18775e),
                             modifier = Modifier.padding(8.dp)
                         )
                     }
-                        Text(item.LocationName, fontWeight = FontWeight.SemiBold)
+                    Text(item.LocationName, fontWeight = FontWeight.SemiBold)
                 }
                 Text(
                     String.format("%.2f", (distance / 1000.0)) + " km away",
@@ -174,7 +173,7 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                     Icon(
                         painter = painterResource(id = R.drawable.note),
                         contentDescription = "Reports",
-                        tint = Green,
+                        tint = Color(0xFF18775e),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                     Text(item.Reports.toInt().toString() + " report")

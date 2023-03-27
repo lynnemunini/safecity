@@ -1,8 +1,13 @@
 package com.grayseal.safecity.screens.emergency
 
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,11 +20,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.grayseal.safecity.R
 import com.grayseal.safecity.data.Contact
@@ -29,6 +38,7 @@ import com.grayseal.safecity.ui.theme.poppinsFamily
 
 @Composable
 fun ContactsScreen(navController: NavController) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,16 +104,23 @@ fun ContactsScreen(navController: NavController) {
                                     onTap = { pressed = !pressed }
                                 )
                             },
+                        color = Color.Transparent
                     ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
                             Column(
-                                modifier = Modifier.width(IntrinsicSize.Min)
+                                modifier = Modifier
+                                    .width(IntrinsicSize.Min)
                                     .height(IntrinsicSize.Min)
                             ) {
                                 Image(
                                     painter = painterResource(id = R.drawable.emergency),
                                     contentDescription = "Emergency Contact",
-                                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
                                 )
                             }
                             Column(
@@ -115,6 +132,13 @@ fun ContactsScreen(navController: NavController) {
                                     Text(
                                         item.name.capitalize(),
                                         fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        "Phone number: " +
+                                                item.contact.substring(4),
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                                 if (pressed) {
@@ -132,26 +156,43 @@ fun ContactsScreen(navController: NavController) {
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            item.contact.substring(4),
-                                            fontWeight = FontWeight.Medium
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable(onClick = {
+                                                if (ContextCompat.checkSelfPermission(
+                                                        context,
+                                                        android.Manifest.permission.CALL_PHONE
+                                                    ) != PackageManager.PERMISSION_GRANTED
+                                                ) {
+                                                    ActivityCompat.requestPermissions(
+                                                        context as Activity,
+                                                        arrayOf(android.Manifest.permission.CALL_PHONE),
+                                                        101
+                                                    )
+                                                } else {
+                                                    val intent =
+                                                        Intent(
+                                                            Intent.ACTION_CALL,
+                                                            Uri.parse(item.contact)
+                                                        )
+                                                    ContextCompat.startActivity(
+                                                        context,
+                                                        intent,
+                                                        null
+                                                    )
+                                                }
+                                            }),
+                                        horizontalArrangement = Arrangement.End,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_call),
+                                            contentDescription = "Call",
+                                            tint = Green,
+                                            modifier = Modifier.padding(8.dp)
                                         )
-                                    }
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.End,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_call),
-                                                contentDescription = "Call",
-                                                tint = Green,
-                                                modifier = Modifier.padding(8.dp)
-                                            )
-                                            Text("Call now")
-                                        }
+                                        Text("Call now")
                                     }
                                 }
                             }

@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.grayseal.safecity.screens.emergency.ContactsScreen
 import com.grayseal.safecity.screens.hotspots.HotspotsScreen
 import com.grayseal.safecity.screens.main.MainScreen
+import com.grayseal.safecity.screens.prevention.PreventionsScreen
 import com.grayseal.safecity.screens.report.ReportScreen
 import com.grayseal.safecity.screens.statistics.ChartsScreen
 import com.grayseal.safecity.screens.statistics.StatisticsScreen
@@ -50,6 +51,9 @@ fun SafeCityNavigation() {
         }
         composable(route = Screen.ContactsScreen.route) {
             ContactsScreen(navController = navController)
+        }
+        composable(route = Screen.PreventionsScreen.route) {
+            PreventionsScreen(navController = navController)
         }
     }
 }
