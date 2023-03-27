@@ -15,6 +15,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -172,18 +173,14 @@ fun Hotspots(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Surface(
-                                modifier = Modifier.size(50.dp),
-                                color = Color.LightGray.copy(alpha = 0.3f),
-                                shape = CircleShape,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.building),
-                                    contentDescription = "Building",
-                                    tint = Color(0xFF18775e),
-                                    modifier = Modifier.padding(8.dp)
-                                )
-                            }
+                            Icon(
+                                painter = painterResource(id = R.drawable.building),
+                                contentDescription = "Building",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .padding(8.dp)
+                                    .clip(CircleShape)
+                            )
                             Text(item.LocationName, fontWeight = FontWeight.SemiBold)
                         }
                         Row(
