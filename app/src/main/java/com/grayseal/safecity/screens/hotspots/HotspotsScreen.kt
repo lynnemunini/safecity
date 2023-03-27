@@ -133,7 +133,7 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 15.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(items = nearbyHotspots) { item: SafeCityItem ->
             val distance = calculateDistance(
