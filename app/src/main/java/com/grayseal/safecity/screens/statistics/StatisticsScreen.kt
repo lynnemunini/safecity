@@ -1,5 +1,6 @@
 package com.grayseal.safecity.screens.statistics
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -173,7 +174,7 @@ fun Hotspots(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(
+                            Image(
                                 painter = painterResource(id = R.drawable.building),
                                 contentDescription = "Building",
                                 modifier = Modifier

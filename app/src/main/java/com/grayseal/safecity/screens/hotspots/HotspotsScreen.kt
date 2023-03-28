@@ -1,11 +1,11 @@
 package com.grayseal.safecity.screens.hotspots
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -145,18 +146,14 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Surface(
-                        modifier = Modifier.size(50.dp),
-                        color = Color.LightGray.copy(alpha = 0.3f),
-                        shape = CircleShape,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.building),
-                            contentDescription = "Building",
-                            tint = Color(0xFF18775e),
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.building),
+                        contentDescription = "Building",
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(8.dp)
+                            .clip(CircleShape)
+                    )
                     Text(item.LocationName, fontWeight = FontWeight.SemiBold)
                 }
                 Text(

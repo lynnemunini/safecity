@@ -8,6 +8,9 @@ plugins {
     id 'com.google.dagger.hilt.android'
     // JSON serialization
     id "kotlinx-serialization"
+    // Add the Google services Gradle plugin
+    id 'com.google.gms.google-services'
+
 
 }
 
@@ -105,6 +108,15 @@ dependencies {
     // Charts and Graphs
     implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 
+    // Import the Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:31.3.0')
+
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    // Add the dependency for the Google Play services library and specify its version
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
+    // Firestore
+    implementation 'com.google.firebase:firebase-firestore-ktx'
 }
 
 // Allow references to generated code

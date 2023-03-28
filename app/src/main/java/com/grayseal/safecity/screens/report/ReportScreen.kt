@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateFormat
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +37,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.grayseal.safecity.R
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
@@ -146,7 +149,9 @@ fun ReportScreen(navController: NavController, name: String?) {
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -534,7 +539,24 @@ fun ReportScreen(navController: NavController, name: String?) {
         }
         // Submit button
         Button(
-            onClick = { submitReport() },
+            onClick = {
+                submitReport(
+                    time = time,
+                    date = date,
+                    location = location,
+                    type = crimeDescription,
+                    victimId = victimID,
+                    victimName = victimName,
+                    victimContact = victimContact,
+                    suspectName = suspectName,
+                    suspectDescription = suspectDescription,
+                    witnessName = witnessName,
+                    witnessContact = witnessContact,
+                    description = witnessDescription,
+                    evidence = imageUri.toString(),
+                    otherInformation = otherInformation
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, bottom = 10.dp),
@@ -552,6 +574,42 @@ fun ReportScreen(navController: NavController, name: String?) {
     }
 }
 
-fun submitReport() {
-    // TODO: Implement the logic for submitting the crime report
+fun submitReport(
+    time: String,
+    date: String,
+    location: String,
+    type: String,
+    victimId: String,
+    victimName: String,
+    victimContact: String,
+    suspectName: String,
+    suspectDescription: String,
+    witnessName: String,
+    witnessContact: String,
+    description: String,
+    evidence: String,
+    otherInformation: String
+) {
+    val db = Firebase.firestore
+    val report = hashMapOf(
+        "time" to time,
+        "date" to date,
+        "location" to location,
+        "typeOfCrime" to type,
+        "victimId" to victimId,
+        "victimName" to victimName,
+        "victimContact" to victimContact,
+        "suspectName" to suspectName,
+        "suspectDescription" to suspectDescription,
+        "witnessName" to witnessName,
+        "witnessContact" to witnessContact,
+        "description" to description,
+        "evidence" to evidence,
+        "otherInformation" to otherInformation
+    )
+    db.collection("reports")
+        .add(report)
+        .addOnSuccessListener {
+            Log.d("REPORT", "SUBMITTED")
+        }
 }
