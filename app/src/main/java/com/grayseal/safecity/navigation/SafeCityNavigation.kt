@@ -11,6 +11,7 @@ import com.grayseal.safecity.screens.hotspots.HotspotsScreen
 import com.grayseal.safecity.screens.main.MainScreen
 import com.grayseal.safecity.screens.prevention.PreventionsScreen
 import com.grayseal.safecity.screens.report.ReportScreen
+import com.grayseal.safecity.screens.report.ReportSubmitScreen
 import com.grayseal.safecity.screens.statistics.ChartsScreen
 import com.grayseal.safecity.screens.statistics.StatisticsScreen
 
@@ -54,6 +55,9 @@ fun SafeCityNavigation() {
         }
         composable(route = Screen.PreventionsScreen.route) {
             PreventionsScreen(navController = navController)
+        }
+        composable(route = Screen.ReportSubmitScreen.route) {
+            ReportSubmitScreen(navController = navController)
         }
     }
 }

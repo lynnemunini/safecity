@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateFormat
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,6 +39,7 @@ import androidx.navigation.NavController
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.grayseal.safecity.R
+import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import java.text.SimpleDateFormat
@@ -541,6 +541,7 @@ fun ReportScreen(navController: NavController, name: String?) {
         Button(
             onClick = {
                 submitReport(
+                    navController = navController,
                     time = time,
                     date = date,
                     location = location,
@@ -575,6 +576,7 @@ fun ReportScreen(navController: NavController, name: String?) {
 }
 
 fun submitReport(
+    navController: NavController,
     time: String,
     date: String,
     location: String,
@@ -610,6 +612,6 @@ fun submitReport(
     db.collection("reports")
         .add(report)
         .addOnSuccessListener {
-            Log.d("REPORT", "SUBMITTED")
+            navController.navigate(Screen.ReportSubmitScreen.route)
         }
 }
