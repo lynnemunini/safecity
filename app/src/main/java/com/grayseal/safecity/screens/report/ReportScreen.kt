@@ -13,14 +13,11 @@ import android.text.format.DateFormat
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,8 +35,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.grayseal.safecity.BuildConfig.*
 import com.grayseal.safecity.R
 import com.grayseal.safecity.navigation.Screen
+import com.grayseal.safecity.sms.sendMessage
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import java.text.SimpleDateFormat
@@ -65,6 +64,9 @@ fun ReportScreen(navController: NavController, name: String?) {
     // Types
     val crimes = listOf("Theft", "Burglary", "Assault", "Vandalism", "Fraud")
     val context = LocalContext.current
+    var reporting by remember {
+        mutableStateOf(false)
+    }
 
     // CALENDAR
     val cal = Calendar.getInstance()
@@ -142,441 +144,455 @@ fun ReportScreen(navController: NavController, name: String?) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Row(
+    Box {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_close),
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            Row(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clickable(onClick = {
-                        navController.popBackStack()
-                    })
-            )
-        }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Text(
-                    "Report a crime",
-                    fontFamily = poppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-                Text(
-                    name.toString(),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-        }
-        // Incident details
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "Please provide the details of the incident, " +
-                            "including the date and time it occurred, as well as the " +
-                            "specific location where it took place.",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                OutlinedTextField(
-                    value = time,
-                    onValueChange = { time = it },
-                    placeholder = {
-                        Text(
-                            "Time of Crime",
-                        )
-                    },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            timePickerDialog.show()
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_time),
-                                "Time",
-                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-                        }
-                    },
-                )
-                OutlinedTextField(
-                    value = date,
-                    onValueChange = { date = it },
-                    placeholder = { Text("Date of Crime") },
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            datePickerDialog.show()
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_calendar),
-                                "Calendar",
-                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                            )
-                        }
-                    },
-                )
-                OutlinedTextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    placeholder = { Text("Location of Crime") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-            }
-        }
-
-        // Crime description
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "Please provide a brief description of the type of crime that " +
-                            "occurred, such as theft, burglary, or assault",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    crimes.forEach { crime ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(
-                                selected = crimeDescription == crime,
-                                onClick = { crimeDescription = crime },
-                                interactionSource = MutableInteractionSource(),
-                                colors = RadioButtonDefaults.colors(selectedColor = Green)
-                            )
-                            Text(
-                                text = crime,
-                                modifier = Modifier.padding(start = 8.dp),
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        // Victim information
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "Please provide the victim's name, ID number (if available), and " +
-                            "contact information (such as phone number or email address).",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                OutlinedTextField(
-                    value = victimID,
-                    onValueChange = { victimID = it },
-                    placeholder = { Text("Victim National ID no.") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    )
-                )
-                OutlinedTextField(
-                    value = victimName,
-                    onValueChange = { victimName = it },
-                    placeholder = { Text("Victim name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                OutlinedTextField(
-                    value = victimContact,
-                    onValueChange = { victimContact = it },
-                    placeholder = { Text("Victim contact information") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-            }
-        }
-        // Suspect information
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "Please provide any details you have about the suspect(s), including " +
-                            "their physical description, name (if known), and any identifying " +
-                            "features such as tattoos or scars.",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                OutlinedTextField(
-                    value = suspectName,
-                    onValueChange = { suspectName = it },
-                    placeholder = { Text("Suspect name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                OutlinedTextField(
-                    value = suspectDescription,
-                    onValueChange = { suspectDescription = it },
-                    placeholder = { Text("Suspect description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-            }
-        }
-        // Witness information
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "Please provide the name(s) and contact information (such as phone " +
-                            "number or email address) of any witnesses to the crime. " +
-                            "Additionally, you may provide a brief description of what the witness(es) saw.",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                OutlinedTextField(
-                    value = witnessName,
-                    onValueChange = { witnessName = it },
-                    placeholder = { Text("Witness name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                OutlinedTextField(
-                    value = witnessContact,
-                    onValueChange = { witnessContact = it },
-                    placeholder = { Text("Witness contact information") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                OutlinedTextField(
-                    value = witnessDescription,
-                    onValueChange = { witnessDescription = it },
-                    placeholder = { Text("Brief description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    )
-                )
-            }
-        }
-        // Evidence
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(15.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    "Please provide any evidence or additional information related to the " +
-                            "crime. This could include photos, videos, or any other relevant documents.",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable(onClick = {
+                            navController.popBackStack()
+                        })
                 )
-                // Show file name if file is selected
-                if (imageUri != null) {
-                    Text("Selected file: ${imageUri?.path}")
-                    bitmap.value?.asImageBitmap()?.let {
-                        Image(
-                            bitmap = it,
-                            contentDescription = imageUri?.path,
-                            modifier = Modifier.height(300.dp),
-                            contentScale = ContentScale.Crop
+            }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    Text(
+                        "Report a crime",
+                        fontFamily = poppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                    Text(
+                        name.toString(),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+            // Incident details
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "Please provide the details of the incident, " +
+                                "including the date and time it occurred, as well as the " +
+                                "specific location where it took place.",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    OutlinedTextField(
+                        value = time,
+                        onValueChange = { time = it },
+                        placeholder = {
+                            Text(
+                                "Time of Crime",
+                            )
+                        },
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                timePickerDialog.show()
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_time),
+                                    "Time",
+                                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                )
+                            }
+                        },
+                    )
+                    OutlinedTextField(
+                        value = date,
+                        onValueChange = { date = it },
+                        placeholder = { Text("Date of Crime") },
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                datePickerDialog.show()
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_calendar),
+                                    "Calendar",
+                                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                )
+                            }
+                        },
+                    )
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = { location = it },
+                        placeholder = { Text("Location of Crime") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         )
+                    )
+                }
+            }
+            // Crime description
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "Please provide a brief description of the type of crime that " +
+                                "occurred, such as theft, burglary, or assault",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        crimes.forEach { crime ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = crimeDescription == crime,
+                                    onClick = { crimeDescription = crime },
+                                    interactionSource = MutableInteractionSource(),
+                                    colors = RadioButtonDefaults.colors(selectedColor = Green)
+                                )
+                                Text(
+                                    text = crime,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
-                // Button to select file
-                TextButton(
-                    onClick = {
-                        launcher.launch(arrayOf("image/*"))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
+            }
+            // Victim information
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "Please provide the victim's name, ID number (if available), and " +
+                                "contact information (such as phone number or email address).",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    OutlinedTextField(
+                        value = victimID,
+                        onValueChange = { victimID = it },
+                        placeholder = { Text("Victim National ID no.") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        )
+                    )
+                    OutlinedTextField(
+                        value = victimName,
+                        onValueChange = { victimName = it },
+                        placeholder = { Text("Victim name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                    OutlinedTextField(
+                        value = victimContact,
+                        onValueChange = { victimContact = it },
+                        placeholder = { Text("Victim contact information (+2547...)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+            }
+            // Suspect information
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "Please provide any details you have about the suspect(s), including " +
+                                "their physical description, name (if known), and any identifying " +
+                                "features such as tattoos or scars.",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    OutlinedTextField(
+                        value = suspectName,
+                        onValueChange = { suspectName = it },
+                        placeholder = { Text("Suspect name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                    OutlinedTextField(
+                        value = suspectDescription,
+                        onValueChange = { suspectDescription = it },
+                        placeholder = { Text("Suspect description") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+            }
+            // Witness information
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "Please provide the name(s) and contact information (such as phone " +
+                                "number or email address) of any witnesses to the crime. " +
+                                "Additionally, you may provide a brief description of what the witness(es) saw.",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    OutlinedTextField(
+                        value = witnessName,
+                        onValueChange = { witnessName = it },
+                        placeholder = { Text("Witness name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                    OutlinedTextField(
+                        value = witnessContact,
+                        onValueChange = { witnessContact = it },
+                        placeholder = { Text("Witness contact information") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                    OutlinedTextField(
+                        value = witnessDescription,
+                        onValueChange = { witnessDescription = it },
+                        placeholder = { Text("Brief description") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+            }
+            // Evidence
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Select File",
+                        "Please provide any evidence or additional information related to the " +
+                                "crime. This could include photos, videos, or any other relevant documents.",
+                        modifier = Modifier.padding(bottom = 8.dp),
                         fontFamily = poppinsFamily,
-                        fontSize = 16.sp,
-                        color = Green,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 13.sp
+                    )
+                    // Show file name if file is selected
+                    if (imageUri != null) {
+                        Text("Selected file: ${imageUri?.path}")
+                        bitmap.value?.asImageBitmap()?.let {
+                            Image(
+                                bitmap = it,
+                                contentDescription = imageUri?.path,
+                                modifier = Modifier.height(300.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                    // Button to select file
+                    TextButton(
+                        onClick = {
+                            launcher.launch(arrayOf("image/*"))
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            "Select File",
+                            fontFamily = poppinsFamily,
+                            fontSize = 16.sp,
+                            color = Green,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+            // Other information
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                    Text(
+                        "If you have any other information related to the crime that you " +
+                                "think may be helpful, please provide it below.",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
+                    )
+                    OutlinedTextField(
+                        value = otherInformation,
+                        onValueChange = { otherInformation = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Green,
+                            focusedBorderColor = Green
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        )
                     )
                 }
             }
-        }
-        // Other information
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                Text(
-                    "If you have any other information related to the crime that you " +
-                            "think may be helpful, please provide it below.",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    fontFamily = poppinsFamily,
-                    fontSize = 13.sp
-                )
-                OutlinedTextField(
-                    value = otherInformation,
-                    onValueChange = { otherInformation = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Green,
-                        focusedBorderColor = Green
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
+            // Submit button
+            Button(
+                onClick = {
+                    reporting = true
+                    submitReport(
+                        navController = navController,
+                        policeStationName = name.toString(),
+                        time = time,
+                        date = date,
+                        location = location,
+                        type = crimeDescription,
+                        victimId = victimID,
+                        victimName = victimName,
+                        victimContact = victimContact,
+                        suspectName = suspectName,
+                        suspectDescription = suspectDescription,
+                        witnessName = witnessName,
+                        witnessContact = witnessContact,
+                        description = witnessDescription,
+                        evidence = imageUri.toString(),
+                        otherInformation = otherInformation
                     )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 10.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Green)
+            ) {
+                Text(
+                    "REPORT",
+                    fontFamily = poppinsFamily,
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
-        }
-        // Submit button
-        Button(
-            onClick = {
-                submitReport(
-                    navController = navController,
-                    time = time,
-                    date = date,
-                    location = location,
-                    type = crimeDescription,
-                    victimId = victimID,
-                    victimName = victimName,
-                    victimContact = victimContact,
-                    suspectName = suspectName,
-                    suspectDescription = suspectDescription,
-                    witnessName = witnessName,
-                    witnessContact = witnessContact,
-                    description = witnessDescription,
-                    evidence = imageUri.toString(),
-                    otherInformation = otherInformation
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 10.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Green)
-        ) {
-            Text(
-                "REPORT",
-                fontFamily = poppinsFamily,
-                color = Color.White,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            if (reporting) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Green)
+                }
+            }
         }
     }
 }
 
 fun submitReport(
     navController: NavController,
+    policeStationName: String,
     time: String,
     date: String,
     location: String,
@@ -613,5 +629,6 @@ fun submitReport(
         .add(report)
         .addOnSuccessListener {
             navController.navigate(Screen.ReportSubmitScreen.route)
+            sendMessage(victimName, victimContact, policeStationName)
         }
 }

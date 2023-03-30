@@ -22,7 +22,6 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -79,7 +78,7 @@ fun MainScreen(navController: NavController) {
     GetCurrentLocation(navController = navController)
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @ExperimentalPermissionsApi
 @Composable
 fun GetCurrentLocation(navController: NavController) {
@@ -213,7 +212,7 @@ fun GetCurrentLocation(navController: NavController) {
 
         } else {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                LinearProgressIndicator(color = Green)
+                androidx.compose.material3.LinearProgressIndicator(color = Green)
             }
         }
     }
@@ -573,7 +572,6 @@ fun BottomSheetContent(
                                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
                                                 policeStation.markerOptions.title.toString(),
@@ -582,7 +580,9 @@ fun BottomSheetContent(
                                                 overflow = TextOverflow.Clip,
                                                 fontFamily = poppinsFamily,
                                                 color = MaterialTheme.colorScheme.onBackground,
-                                                modifier = Modifier.width(150.dp)
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .padding(end = 10.dp)
                                             )
                                             Surface(
                                                 shape = RoundedCornerShape(30.dp),
