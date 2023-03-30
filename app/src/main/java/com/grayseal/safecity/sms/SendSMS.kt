@@ -38,9 +38,8 @@ fun sendMessage(name: String, contact: String, policeStationName: String) {
         Callback<ResponseBody> {
         override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if (response.isSuccessful) Log.d("TAG", "onResponse->success")
-            else Log.d("TAG", "onResponse->failure")
+            else Log.d("TAG", "${response.code()}, ${response.message()}")
         }
-
         override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
             Log.d("TAG", "onFailure")
         }

@@ -576,15 +576,15 @@ fun ReportScreen(navController: NavController, name: String?) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            if (reporting) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Green)
-                }
+        }
+        if (reporting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Green)
             }
         }
     }

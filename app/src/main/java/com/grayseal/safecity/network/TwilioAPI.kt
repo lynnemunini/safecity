@@ -6,7 +6,7 @@ import retrofit2.http.*
 
 interface TwilioAPI {
     @FormUrlEncoded
-    @POST("Accounts/{ACCOUNT_SID}/SMS/Messages")
+    @POST("Accounts/{ACCOUNT_SID}/Messages")
     fun sendMessage(
         @Path("ACCOUNT_SID") accountSId: String,
         @Header("Authorization") signature: String,
