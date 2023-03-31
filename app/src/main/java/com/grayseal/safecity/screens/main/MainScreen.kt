@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -235,6 +236,12 @@ fun SafeCityScaffold(
     var multiFloatingState by remember {
         mutableStateOf(MultiFloatingState.Collapsed)
     }
+    var passcode by remember {
+        mutableStateOf("")
+    }
+    var enterPasscode by remember {
+        mutableStateOf(false)
+    }
     BottomSheetScaffold(
         scaffoldState = sheetScaffoldState,
         sheetElevation = 40.dp,
@@ -321,23 +328,120 @@ fun SafeCityScaffold(
                                             )
                                         }
                                     }
+                                    if (enterPasscode) {
+                                        AlertDialog(
+                                            onDismissRequest = {
+                                                enterPasscode = false
+                                            },
+                                            shape = RoundedCornerShape(5.dp),
+                                            containerColor = Color.White,
+                                            title = {
+                                                Column(modifier = Modifier.fillMaxWidth()) {
+                                                    Text(
+                                                        "Enter passcode",
+                                                        fontSize = 16.sp,
+                                                        fontFamily = poppinsFamily,
+                                                        color = MaterialTheme.colorScheme.onBackground,
+                                                        fontWeight = FontWeight.Bold,
+                                                        textAlign = TextAlign.Left
+                                                    )
+                                                    Text(
+                                                        "You need admin privileges to access this reports",
+                                                        fontSize = 11.sp,
+                                                        fontFamily = poppinsFamily,
+                                                        color = MaterialTheme.colorScheme.onBackground,
+                                                        textAlign = TextAlign.Left
+                                                    )
+                                                }
+                                            },
+                                            confirmButton = {
+                                                androidx.compose.material3.TextButton(onClick = {
+                                                }) {
+                                                    Text(
+                                                        "Generate",
+                                                        fontSize = 14.sp,
+                                                        fontFamily = poppinsFamily,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Green
+                                                    )
+                                                }
+                                            },
+                                            dismissButton = {
+                                                androidx.compose.material3.TextButton(onClick = {
+                                                    enterPasscode = false
+                                                }) {
+                                                    Text(
+                                                        "Cancel",
+                                                        fontSize = 15.sp,
+                                                        fontFamily = poppinsFamily,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Green
+                                                    )
+                                                }
+                                            },
+                                            text = {
+                                                Column(modifier = Modifier.fillMaxWidth()) {
+                                                    OutlinedTextField(
+                                                        value = passcode,
+                                                        onValueChange = { passcode = it },
+                                                        maxLines = 1,
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        shape = RoundedCornerShape(5.dp),
+                                                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                                                            containerColor = Color.White,
+                                                            cursorColor = Green,
+                                                            focusedBorderColor = Green,
+                                                            unfocusedBorderColor = Color.LightGray
+                                                        )
+                                                    )
+                                                }
+                                            })
+                                    }
+                                    // Generate PDF version of reports(Admin): SCHOOL REQUIREMENT
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 20.dp)
+                                            .clickable(onClick = {
+                                                enterPasscode = true
+                                            }),
+                                        horizontalArrangement = Arrangement.Start,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = com.grayseal.safecity.R.drawable.download),
+                                            contentDescription = "Generate Reports",
+                                            tint = Color.White,
+                                            modifier = Modifier
+                                                .size(35.dp)
+                                                .padding(end = 10.dp)
+                                        )
+                                        Text(
+                                            text = "Generate Reports",
+                                            fontSize = 15.sp,
+                                            fontFamily = poppinsFamily,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.White,
+                                            modifier = Modifier.align(Alignment.CenterVertically)
+                                        )
+                                    }
                                 }
                             }
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                Text(
-                                    text = "© 2023",
-                                    fontSize = 12.sp,
-                                    fontFamily = poppinsFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    textAlign = TextAlign.End,
-                                    modifier = Modifier.align(Alignment.Bottom)
-                                )
-                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Text(
+                                text = "© 2023",
+                                fontSize = 12.sp,
+                                fontFamily = poppinsFamily,
+                                fontWeight = FontWeight.Normal,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.align(Alignment.Bottom)
+                            )
                         }
                     }
                 },

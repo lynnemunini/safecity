@@ -23,6 +23,6 @@ val navigationDrawerItems = listOf(
         name = "Emergency Contacts",
         route = Screen.ContactsScreen.route,
         icon = R.drawable.ic_contact
-    ),
+    )
 )
 
