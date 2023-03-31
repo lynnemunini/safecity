@@ -1,6 +1,6 @@
 package com.grayseal.safecity.repository
 
-import com.grayseal.safecity.data.DataOrException
+import com.grayseal.safecity.model.DataOrException
 import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.network.SafeCityAPI
 import javax.inject.Inject

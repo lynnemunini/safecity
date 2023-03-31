@@ -1,4 +1,4 @@
-package com.grayseal.safecity.data
+package com.grayseal.safecity.model
 
 data class DataOrException<T, Boolean, E: Exception>(
     var data: T? = null,

@@ -1,6 +1,7 @@
 package com.grayseal.safecity.data
 
 import com.grayseal.safecity.R
+import com.grayseal.safecity.model.NavigationDrawerItem
 import com.grayseal.safecity.navigation.Screen
 
 val navigationDrawerItems = listOf(

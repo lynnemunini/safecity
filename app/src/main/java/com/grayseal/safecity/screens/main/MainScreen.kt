@@ -1,10 +1,12 @@
 package com.grayseal.safecity.screens.main
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -60,17 +62,21 @@ import com.grayseal.safecity.BuildConfig
 import com.grayseal.safecity.components.MiniFabItem
 import com.grayseal.safecity.components.MultiFloatingActionButton
 import com.grayseal.safecity.components.MultiFloatingState
-import com.grayseal.safecity.data.DataOrException
-import com.grayseal.safecity.data.PoliceStation
 import com.grayseal.safecity.data.navigationDrawerItems
 import com.grayseal.safecity.location.PermissionDeniedContent
+import com.grayseal.safecity.model.DataOrException
+import com.grayseal.safecity.model.PoliceStation
 import com.grayseal.safecity.model.SafeCityItem
 import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.LightGreen
 import com.grayseal.safecity.ui.theme.poppinsFamily
 import com.grayseal.safecity.utils.*
+import com.itextpdf.text.*
+import com.itextpdf.text.pdf.PdfWriter
 import kotlinx.coroutines.*
+import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -199,6 +205,7 @@ fun GetCurrentLocation(navController: NavController) {
             nearbyHotspots?.let {
                 SafeCityScaffold(
                     navController = navController,
+                    mainViewModel = viewModel,
                     placesClient = placesClient,
                     latitude = latitude,
                     longitude = longitude,
@@ -223,6 +230,7 @@ fun GetCurrentLocation(navController: NavController) {
 @Composable
 fun SafeCityScaffold(
     navController: NavController,
+    mainViewModel: MainViewModel,
     placesClient: PlacesClient,
     latitude: Double,
     longitude: Double,
@@ -242,6 +250,10 @@ fun SafeCityScaffold(
     var enterPasscode by remember {
         mutableStateOf(false)
     }
+    var download by remember {
+        mutableStateOf(false)
+    }
+    val context = LocalContext.current
     BottomSheetScaffold(
         scaffoldState = sheetScaffoldState,
         sheetElevation = 40.dp,
@@ -355,7 +367,19 @@ fun SafeCityScaffold(
                                                 }
                                             },
                                             confirmButton = {
+                                                if (download) {
+                                                    DownloadCrimeReports(
+                                                        mainViewModel = mainViewModel,
+                                                        context = context
+                                                    )
+                                                }
                                                 androidx.compose.material3.TextButton(onClick = {
+                                                    download = if (passcode == "12345") {
+                                                        enterPasscode = false
+                                                        true
+                                                    } else {
+                                                        false
+                                                    }
                                                 }) {
                                                     Text(
                                                         "Generate",
@@ -430,7 +454,8 @@ fun SafeCityScaffold(
                         }
                         Row(
                             modifier = Modifier
-                                .fillMaxSize().padding(end = 20.dp),
+                                .fillMaxSize()
+                                .padding(20.dp),
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.Bottom
                         ) {
@@ -923,5 +948,39 @@ suspend fun retrieveHotspots(
                 ) <= maxDistance
             }
         filteredSequence?.toList()
+    }
+}
+
+@Composable
+fun DownloadCrimeReports(mainViewModel: MainViewModel, context: Context) {
+    mainViewModel.getAllReports { reports ->
+        // Get the Documents directory
+        val documentsDirectory =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+
+        // Create the output file path
+        val outputPath = File(documentsDirectory, "crimeReports.pdf").path
+
+        // Create the PDF document
+        val document = Document()
+        PdfWriter.getInstance(document, FileOutputStream(outputPath))
+        document.open()
+
+        // Add title to the document
+        val titleFont = Font(Font.FontFamily.TIMES_ROMAN, 24f, Font.BOLD)
+        val title = Paragraph("CRIME REPORTS", titleFont)
+        title.alignment = Element.ALIGN_CENTER
+        document.add(title)
+        document.add(Chunk.NEWLINE)
+
+        // Add reports to the document
+        val contentFont = Font(Font.FontFamily.TIMES_ROMAN, 12f)
+        for ((index, report) in reports.withIndex()) {
+            val content = Paragraph("${index + 1}. $report", contentFont)
+            document.add(content)
+            document.add(Chunk.NEWLINE)
+        }
+        document.close()
+        Toast.makeText(context, "Reports PDF Downloaded", Toast.LENGTH_LONG).show()
     }
 }

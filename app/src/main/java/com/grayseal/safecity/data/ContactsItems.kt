@@ -1,5 +1,7 @@
 package com.grayseal.safecity.data
 
+import com.grayseal.safecity.model.Contact
+
 val contacts = listOf(
     Contact(
         name = "Police Emergency Line",

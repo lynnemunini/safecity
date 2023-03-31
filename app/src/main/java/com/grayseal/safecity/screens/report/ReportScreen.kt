@@ -37,6 +37,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.grayseal.safecity.BuildConfig.*
 import com.grayseal.safecity.R
+import com.grayseal.safecity.model.Report
 import com.grayseal.safecity.navigation.Screen
 import com.grayseal.safecity.sms.sendMessage
 import com.grayseal.safecity.ui.theme.Green
@@ -609,26 +610,27 @@ fun submitReport(
     otherInformation: String
 ) {
     val db = Firebase.firestore
-    val report = hashMapOf(
-        "time" to time,
-        "date" to date,
-        "location" to location,
-        "typeOfCrime" to type,
-        "victimId" to victimId,
-        "victimName" to victimName,
-        "victimContact" to victimContact,
-        "suspectName" to suspectName,
-        "suspectDescription" to suspectDescription,
-        "witnessName" to witnessName,
-        "witnessContact" to witnessContact,
-        "description" to description,
-        "evidence" to evidence,
-        "otherInformation" to otherInformation
+    val report = Report(
+        policeStationName = policeStationName,
+        time = time,
+        date = date,
+        location = location,
+        typeOfCrime = type,
+        victimId = victimId,
+        victimName = victimName,
+        victimContact = victimContact,
+        suspectName = suspectName,
+        suspectDescription = suspectDescription,
+        witnessName = witnessName,
+        witnessContact = witnessContact,
+        description = description,
+        evidence = evidence,
+        otherInformation = otherInformation
     )
     db.collection("reports")
         .add(report)
         .addOnSuccessListener {
             navController.navigate(Screen.ReportSubmitScreen.route)
-            sendMessage(victimName, victimContact, policeStationName)
+            // sendMessage(victimName, victimContact, policeStationName)
         }
 }

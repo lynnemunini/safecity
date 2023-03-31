@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,7 +30,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.grayseal.safecity.R
-import com.grayseal.safecity.data.Contact
+import com.grayseal.safecity.model.Contact
 import com.grayseal.safecity.data.contacts
 import com.grayseal.safecity.ui.theme.Green
 import com.grayseal.safecity.ui.theme.poppinsFamily

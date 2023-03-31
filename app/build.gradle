@@ -121,6 +121,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
     // Fire store
     implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    // iText library to create PDF format document
+    implementation 'com.itextpdf:itextpdf:5.5.13.2'
 }
 
 // Allow references to generated code

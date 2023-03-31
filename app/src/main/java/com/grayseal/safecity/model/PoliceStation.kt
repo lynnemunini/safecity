@@ -1,4 +1,4 @@
-package com.grayseal.safecity.data
+package com.grayseal.safecity.model
 
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.model.AutocompletePrediction
