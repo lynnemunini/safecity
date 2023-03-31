@@ -132,13 +132,15 @@ fun ContactsScreen(navController: NavController) {
                                     Text(
                                         item.name.capitalize(),
                                         fontWeight = FontWeight.SemiBold,
+                                        fontFamily = poppinsFamily
                                     )
                                 }
                                 Row(modifier = Modifier.fillMaxWidth()) {
                                     Text(
                                         "Phone number: " +
                                                 item.contact.substring(4),
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = poppinsFamily
                                     )
                                 }
                                 if (pressed) {
@@ -149,6 +151,8 @@ fun ContactsScreen(navController: NavController) {
                                     ) {
                                         Text(
                                             item.description,
+                                            fontFamily = poppinsFamily,
+                                            fontSize = 12.sp
                                         )
                                     }
                                 }
@@ -192,7 +196,7 @@ fun ContactsScreen(navController: NavController) {
                                             tint = Green,
                                             modifier = Modifier.padding(8.dp)
                                         )
-                                        Text("Call now")
+                                        Text("Call now", fontFamily = poppinsFamily)
                                     }
                                 }
                             }

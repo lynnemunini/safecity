@@ -154,7 +154,8 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                             .padding(8.dp)
                             .clip(CircleShape)
                     )
-                    Text(item.LocationName, fontWeight = FontWeight.SemiBold)
+                    Text(item.LocationName, fontWeight = FontWeight.Medium, fontFamily = poppinsFamily,
+                        fontSize = 14.sp)
                 }
                 Text(
                     String.format("%.2f", (distance / 1000.0)) + " km away",
@@ -173,7 +174,8 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                         tint = Color(0xFF18775e),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
-                    Text(item.Reports.toInt().toString() + " report")
+                    Text(item.Reports.toInt().toString() + " report", fontFamily = poppinsFamily,
+                        fontSize = 13.sp)
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -186,7 +188,8 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                         tint = Color(0xFFe73058),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
-                    Text(item.FrequentCrime.capitalize())
+                    Text(item.FrequentCrime.capitalize(), fontFamily = poppinsFamily,
+                        fontSize = 13.sp)
                 }
                 Divider(
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)

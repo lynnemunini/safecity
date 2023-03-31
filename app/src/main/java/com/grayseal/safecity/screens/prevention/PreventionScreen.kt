@@ -154,10 +154,13 @@ fun Prevention(image: Int, title: String, description: String) {
                     Text(
                         title,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = 18.sp,
+                        fontFamily = poppinsFamily
                     )
                     Text(
-                        description
+                        description,
+                        fontFamily = poppinsFamily,
+                        fontSize = 13.sp
                     )
                 }
             }

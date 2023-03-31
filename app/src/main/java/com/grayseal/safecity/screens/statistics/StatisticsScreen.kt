@@ -182,7 +182,8 @@ fun Hotspots(
                                     .padding(8.dp)
                                     .clip(CircleShape)
                             )
-                            Text(item.LocationName, fontWeight = FontWeight.SemiBold)
+                            Text(item.LocationName, fontWeight = FontWeight.Medium, fontFamily = poppinsFamily,
+                                fontSize = 14.sp)
                         }
                         Row(
                             modifier = Modifier
@@ -196,7 +197,8 @@ fun Hotspots(
                                 tint = Color(0xFF18775e),
                                 modifier = Modifier.padding(8.dp)
                             )
-                            Text("Reports: " + item.Reports.toInt().toString())
+                            Text("Reports: " + item.Reports.toInt().toString(), fontFamily = poppinsFamily,
+                                fontSize = 13.sp)
                         }
                         Row(
                             modifier = Modifier
@@ -210,7 +212,8 @@ fun Hotspots(
                                 tint = Color(0xFFe73058),
                                 modifier = Modifier.padding(8.dp)
                             )
-                            Text("Frequent Crime: " + item.FrequentCrime.capitalize())
+                            Text("Frequent Crime: " + item.FrequentCrime.capitalize(), fontFamily = poppinsFamily,
+                                fontSize = 13.sp)
                         }
                         Row(
                             modifier = Modifier
@@ -224,7 +227,8 @@ fun Hotspots(
                                 tint = Color(0xFFf3a52d),
                                 modifier = Modifier.padding(8.dp)
                             )
-                            Text("Crime Likelihood: " + item.CrimeLikelihood.capitalize())
+                            Text("Crime Likelihood: " + item.CrimeLikelihood.capitalize(), fontFamily = poppinsFamily,
+                                fontSize = 13.sp)
                         }
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(

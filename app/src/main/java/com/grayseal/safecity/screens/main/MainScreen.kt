@@ -430,7 +430,7 @@ fun SafeCityScaffold(
                         }
                         Row(
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .fillMaxSize().padding(end = 20.dp),
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.Bottom
                         ) {

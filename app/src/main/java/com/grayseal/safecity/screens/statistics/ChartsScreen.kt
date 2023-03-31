@@ -165,9 +165,11 @@ fun Charts(
     categories: ChartEntryModel
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = LightGreen) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -275,8 +277,10 @@ fun Charts(
                                     )
                                     Text(
                                         "Notorious Day -> " + data.NotoriousDay,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = White
+                                        fontWeight = FontWeight.Medium,
+                                        color = White,
+                                        fontFamily = poppinsFamily,
+                                        fontSize = 13.sp
                                     )
                                 }
                             }
@@ -307,7 +311,10 @@ fun Charts(
                                         horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
                                         titleComponent = textComponent(
                                             color = White,
-                                            background = shapeComponent(Shapes.pillShape, Color(0xFFf3a52d)),
+                                            background = shapeComponent(
+                                                Shapes.pillShape,
+                                                Color(0xFFf3a52d)
+                                            ),
                                             padding = axisTitlePadding,
                                             margins = startAxisTitleMargins,
                                             typeface = Typeface.MONOSPACE,
@@ -316,7 +323,10 @@ fun Charts(
                                     ),
                                     bottomAxis = bottomAxis(
                                         titleComponent = textComponent(
-                                            background = shapeComponent(Shapes.pillShape, Color(0xFFf3a52d)),
+                                            background = shapeComponent(
+                                                Shapes.pillShape,
+                                                Color(0xFFf3a52d)
+                                            ),
                                             color = White,
                                             padding = axisTitlePadding,
                                             margins = bottomAxisTitleMargins,
@@ -342,8 +352,10 @@ fun Charts(
                                     )
                                     Text(
                                         "Notorious Month -> " + data.NotoriousMonth,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFFf3a52d)
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFFf3a52d),
+                                        fontFamily = poppinsFamily,
+                                        fontSize = 13.sp
                                     )
                                 }
                             }
@@ -409,7 +421,9 @@ fun Charts(
                                     )
                                     Text(
                                         "Frequent Crime -> " + data.FrequentCrime,
-                                        fontWeight = FontWeight.SemiBold,
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = poppinsFamily,
+                                        fontSize = 13.sp,
                                         color = Green
                                     )
                                 }
