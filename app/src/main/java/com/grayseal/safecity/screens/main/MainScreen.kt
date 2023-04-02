@@ -976,7 +976,20 @@ fun DownloadCrimeReports(mainViewModel: MainViewModel, context: Context) {
         // Add reports to the document
         val contentFont = Font(Font.FontFamily.TIMES_ROMAN, 12f)
         for ((index, report) in reports.withIndex()) {
-            val content = Paragraph("${index + 1}. $report", contentFont)
+            val content = Paragraph(
+                "${index + 1}. \nPolice Station Name: " +
+                        "${report.policeStationName}\nTime: ${report.time}\nDate: " +
+                        "${report.date}\nLocation: ${report.location}\nType of Crime: " +
+                        "${report.typeOfCrime}\nVictim ID: ${report.victimId}\nVictim Name: " +
+                        "${report.victimName}\nVictim Contact: ${report.victimContact}\nSuspect Name: " +
+                        "${report.suspectName}\nSuspect Description: " +
+                        "${report.suspectDescription}\nWitness Name: " +
+                        "${report.witnessName}\nWitness Contact: " +
+                        "${report.witnessContact}\nDescription: " +
+                        "${report.description}\nEvidence: " +
+                        "${report.evidence}\nOther Information: ${report.otherInformation}",
+                contentFont
+            )
             document.add(content)
             document.add(Chunk.NEWLINE)
         }

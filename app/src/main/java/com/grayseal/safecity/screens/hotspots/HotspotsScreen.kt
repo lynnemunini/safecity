@@ -174,7 +174,7 @@ fun Hotspots(nearbyHotspots: List<SafeCityItem>, latitude: Double, longitude: Do
                         tint = Color(0xFF18775e),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
-                    Text(item.Reports.toInt().toString() + " report", fontFamily = poppinsFamily,
+                    Text(item.Reports.toInt().toString() + " reports", fontFamily = poppinsFamily,
                         fontSize = 13.sp)
                 }
                 Row(

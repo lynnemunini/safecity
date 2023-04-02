@@ -631,6 +631,6 @@ fun submitReport(
         .add(report)
         .addOnSuccessListener {
             navController.navigate(Screen.ReportSubmitScreen.route)
-            // sendMessage(victimName, victimContact, policeStationName)
+            sendMessage(victimName, victimContact, policeStationName)
         }
 }
