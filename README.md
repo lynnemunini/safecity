@@ -4,7 +4,7 @@ SafeCity App is a mobile application built with Kotlin and Jetpack Compose that 
 
 ## 💡 Note
 
-This app is done as a part of a school project and is only meant as a proof of concept. A real-world application would require a lot more features and security. This app is not meant to be used in production. Furthermore, the data used in the analysis is fake and is only meant to demonstrate the analysis techniques. The data is not representative of the actual crime rates in Nairobi.
+A real-world application would require a lot more features and security. This app is not meant to be used in production. Furthermore, the data used in the analysis is fake and is only meant to demonstrate the analysis techniques. The data is not representative of the actual crime rates in Nairobi.
 
 ## 🔑 Permissions Required
 The app requires the following permissions to run:
